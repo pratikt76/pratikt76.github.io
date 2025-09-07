@@ -125,7 +125,7 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                     GitHub <ArrowUpRight className="w-3 h-3" />
                   </a>
                   <a
-                    href="#"
+                    href="https://pratikt76.github.io/VelocityCSS/"
                     className="inline-flex items-center gap-2 text-sm underline underline-offset-4 decoration-zinc-600 hover:decoration-zinc-200"
                     target="_blank"
                     rel="noopener noreferrer"
