@@ -30,7 +30,14 @@ export default function Footer() {
         {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · Pune
       </span>
       <span>{temp ? `Currently ${temp}` : "Loading weather..."}</span>
-      <span>© {new Date().getFullYear()} pratik.dev</span>
+      <a
+        href="https://pratikt76.github.io/FlagMaster/"
+        className="hover:text-zinc-300 transition-colors"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Play FlagMaster 🎯
+      </a>
     </footer>
   );
 }
