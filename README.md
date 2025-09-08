@@ -18,11 +18,11 @@ Hi, I'm **Pratik** 👋 — a Software Development Engineer passionate about bui
 
 ### [Parkin](https://github.com/pratikt76/Parkin)
 Smart parking management system — optimizing slot allocation and availability tracking.  
-[GitHub](https://github.com/pratikt76/Parkin) | [Live Demo](#)
+[GitHub](https://github.com/pratikt76/Parkin) | [Live Demo](https://github.com/pratikt76/Parkin/blob/main/README.md)
 
 ### [VelocityCSS](https://github.com/pratikt76/VelocityCSS)
 Lightweight CSS utility framework — faster styling without unnecessary bloat.  
-[GitHub](https://github.com/pratikt76/VelocityCSS) | [Live Demo](#)
+[GitHub](https://github.com/pratikt76/VelocityCSS) | [Live Demo](https://pratikt76.github.io/VelocityCSS/)
 
 ---
 
