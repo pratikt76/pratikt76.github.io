@@ -7,7 +7,7 @@ import SpotifyRecentlyPlayed from "./SpotifyRecentlyPlayed";
 /* ─── Data ─── */
 const greetings = [
     'hey', 'hola', 'hallo', 'hi', 'yo', 'sup', 'ciao', 'namaste',
-    'bonjour', 'olá', 'salaam', 'guten tag', 'konnichiwa', 'ni hao', 'annyeong',
+    'bonjour', 'olá', 'guten tag', 'konnichiwa', 'ni hao', 'annyeong',
     'ssup', 'ahoy', 'aloha', 'howdy', 'gday'
 ];
 
