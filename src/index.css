@@ -2,6 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Theme Variables ─── */
+:root {
+  --bg-primary: 250, 250, 250;
+  --bg-card: 0, 0, 0;
+  --bg-card-opacity: 0.03;
+  --text-primary: 24, 24, 27;
+  --text-secondary: 113, 113, 122;
+  --text-muted: 161, 161, 170;
+  --border-opacity: 0.08;
+  --glow-blue: 59, 130, 246;
+  --glow-opacity: 0.06;
+  --nav-bg: 250, 250, 250;
+  --nav-opacity: 0.8;
+}
+
+.dark {
+  --bg-primary: 3, 3, 3;
+  --bg-card: 255, 255, 255;
+  --bg-card-opacity: 0.02;
+  --text-primary: 244, 244, 245;
+  --text-secondary: 161, 161, 170;
+  --text-muted: 113, 113, 122;
+  --border-opacity: 0.06;
+  --glow-blue: 59, 130, 246;
+  --glow-opacity: 0.06;
+  --nav-bg: 3, 3, 3;
+  --nav-opacity: 0.7;
+}
+
 body {
-  @apply bg-zinc-950 text-zinc-100;
+  background-color: rgb(var(--bg-primary));
+  color: rgb(var(--text-primary));
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide scrollbar for spotify section */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─── Background Animations ─── */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

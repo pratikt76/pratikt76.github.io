@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+
 
 export default function Footer() {
   const [time, setTime] = useState(new Date());
@@ -30,14 +32,20 @@ export default function Footer() {
         {time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · Pune
       </span>
       <span>{temp ? `Currently ${temp}` : "Loading weather..."}</span>
-      <a
-        href="https://pratikt76.github.io/FlagMaster/"
-        className="hover:text-zinc-300 transition-colors"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Play FlagMaster 🎯
-      </a>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <a
+          href="https://pratikt76.github.io/FlagMaster/"
+          className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Play FlagMaster 🎯
+        </a>
+        <Link to="/notes" className="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
+          Vault 🔒
+        </Link>
+      </div>
     </footer>
+
   );
 }
