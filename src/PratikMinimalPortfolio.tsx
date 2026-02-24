@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react';
-import { ArrowUpRight, Github, Linkedin, Mail, FileText, MapPin, Briefcase, GraduationCap, Sun, Moon, Phone, ExternalLink, Instagram, Terminal } from 'lucide-react';
+import { ArrowUpRight, Github, Linkedin, Mail, FileText, MapPin, Briefcase, GraduationCap, Sun, Moon, Phone, ExternalLink, Instagram } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Footer from "./Footer";
 import SpotifyRecentlyPlayed from "./SpotifyRecentlyPlayed";
@@ -144,7 +144,6 @@ function ThemeToggle({ isDark, toggle }: { isDark: boolean; toggle: () => void }
 /* ─── Main ─── */
 export default function PratikMinimalPortfolio(): JSX.Element {
     const [greeting, setGreeting] = useState(greetings[0]);
-    const [isDevMode, setIsDevMode] = useState(false);
     const [isTimeHovered, setIsTimeHovered] = useState(false);
     const epochTime = useEpochTime();
     const { x, y } = useMousePosition();
@@ -170,11 +169,7 @@ export default function PratikMinimalPortfolio(): JSX.Element {
 
     return (
         <Fragment>
-            <main className={`min-h-screen relative overflow-hidden transition-colors duration-300 ${isDevMode ? 'bg-black text-green-500 font-mono' : 'bg-[#fafafa] dark:bg-[#030303] text-zinc-900 dark:text-zinc-100 selection:bg-blue-500/30 selection:text-white'}`}>
-                {/* Dev Mode Scanline Overlay */}
-                {isDevMode && (
-                    <div className="fixed inset-0 pointer-events-none z-[100] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] opacity-20" />
-                )}
+            <main className="min-h-screen relative overflow-hidden transition-colors duration-300 bg-[#fafafa] dark:bg-[#030303] text-zinc-900 dark:text-zinc-100 selection:bg-blue-500/30 selection:text-white">
 
                 {/* Ambient glow (dark mode only) */}
                 <div
@@ -209,18 +204,10 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                 >
                     <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => setIsDevMode(!isDevMode)}
-                                className={`p-2 rounded-lg transition-all duration-300 ${isDevMode ? 'text-green-500 bg-green-500/10 rotate-180' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                title={isDevMode ? "Exit Developer Mode" : "Enter Developer Mode"}
-                            >
-                                <Terminal className="w-4 h-4" />
-                            </button>
-
                             <div
                                 onMouseEnter={() => setIsTimeHovered(true)}
                                 onMouseLeave={() => setIsTimeHovered(false)}
-                                className={`text-sm font-mono font-semibold tracking-tight tabular-nums inline-flex items-center overflow-hidden h-5 cursor-pointer ${isDevMode ? 'text-green-500' : 'text-zinc-500 dark:text-zinc-400'}`}
+                                className="text-sm font-mono font-semibold tracking-tight tabular-nums inline-flex items-center overflow-hidden h-5 cursor-pointer text-zinc-500 dark:text-zinc-400"
                                 title={isTimeHovered ? "Current Local Time" : "Current Unix Epoch Time"}
                             >
                                 <AnimatePresence mode="wait" initial={false}>
@@ -246,7 +233,7 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                             transition={{ duration: 0.2 }}
                                             className="flex items-center"
                                         >
-                                            <span className={`mr-0.5 ${isDevMode ? 'text-green-500 animate-pulse' : 'text-blue-500 dark:text-blue-400 opacity-70'}`}>$</span>
+                                            <span className="text-blue-500 dark:text-blue-400 opacity-70">$</span>
                                             <span>{String(epochTime).slice(0, -1)}</span>
                                             <div className="relative w-[1ch] h-5 overflow-hidden flex flex-col items-center">
                                                 <AnimatePresence mode="popLayout" initial={false}>
@@ -412,40 +399,36 @@ export default function PratikMinimalPortfolio(): JSX.Element {
 
                                     <div className="relative z-10">
                                         <div className="flex justify-between items-start mb-3">
-                                            <h3 className={`text-lg font-semibold transition-colors ${isDevMode ? 'text-green-400' : 'text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300'}`}>
+                                            <h3 className="text-lg font-semibold transition-colors text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300">
                                                 {proj.title}
                                             </h3>
                                             <div className="flex gap-2">
-                                                {isDevMode ? (
-                                                    <span className="text-xs font-mono text-green-500/70 border border-green-500/30 px-2 py-0.5 rounded">[PRIVATE]</span>
-                                                ) : (
-                                                    <div className="flex gap-2">
-                                                        <a
-                                                            href={proj.github}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
-                                                        >
-                                                            <Github className="w-4 h-4" />
-                                                        </a>
-                                                        <a
-                                                            href={proj.demo}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
-                                                        >
-                                                            <ArrowUpRight className="w-4 h-4" />
-                                                        </a>
-                                                    </div>
-                                                )}
+                                                <div className="flex gap-2">
+                                                    <a
+                                                        href={proj.github}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
+                                                    >
+                                                        <Github className="w-4 h-4" />
+                                                    </a>
+                                                    <a
+                                                        href={proj.demo}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
+                                                    >
+                                                        <ArrowUpRight className="w-4 h-4" />
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
-                                        <p className={`text-sm leading-relaxed mb-5 ${isDevMode ? 'text-green-500/80 font-mono' : 'text-zinc-500'}`}>{proj.desc}</p>
+                                        <p className="text-sm leading-relaxed mb-5 text-zinc-500">{proj.desc}</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {proj.tags.map((tag) => (
                                                 <span
                                                     key={tag}
-                                                    className={`px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase rounded-md border transition-colors ${isDevMode ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-black/[0.04] dark:bg-white/[0.04] text-zinc-500 border-black/[0.06] dark:border-white/[0.05]'}`}
+                                                    className="px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase rounded-md border transition-colors bg-black/[0.04] dark:bg-white/[0.04] text-zinc-500 border-black/[0.06] dark:border-white/[0.05]"
                                                 >
                                                     {tag}
                                                 </span>
