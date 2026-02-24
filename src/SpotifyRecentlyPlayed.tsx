@@ -18,24 +18,33 @@ export default function SpotifyRecentlyPlayed() {
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        fetch(SPOTIFY_API_URL)
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.tracks) {
-                    // Deduplicate by track name
-                    const seen = new Set<string>();
-                    const unique = data.tracks.filter((t: SpotifyTrack) => {
-                        if (seen.has(t.name)) return false;
-                        seen.add(t.name);
-                        return true;
-                    });
-                    setTracks(unique);
-                } else {
-                    setError(true);
-                }
-            })
-            .catch(() => setError(true))
-            .finally(() => setLoading(false));
+        const fetchTracks = () => {
+            fetch(SPOTIFY_API_URL)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.tracks) {
+                        // Deduplicate by track name
+                        const seen = new Set<string>();
+                        const unique = data.tracks.filter((t: SpotifyTrack) => {
+                            if (seen.has(t.name)) return false;
+                            seen.add(t.name);
+                            return true;
+                        });
+                        setTracks(unique);
+                    } else {
+                        setError(true);
+                    }
+                })
+                .catch(() => setError(true))
+                .finally(() => setLoading(false));
+        };
+
+        // Initial fetch
+        fetchTracks();
+
+        // Re-fetch every 60 seconds
+        const intervalId = setInterval(fetchTracks, 60_000);
+        return () => clearInterval(intervalId);
     }, []);
 
     if (error) return null; // Silently hide section if API fails
