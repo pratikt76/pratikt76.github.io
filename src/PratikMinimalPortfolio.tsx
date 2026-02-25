@@ -1,8 +1,9 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react';
-import { ArrowUpRight, Github, Linkedin, Mail, FileText, MapPin, Briefcase, GraduationCap, Sun, Moon, Phone, ExternalLink, Instagram } from 'lucide-react';
+import { ArrowUpRight, Github, Linkedin, Mail, FileText, MapPin, Sun, Moon, Phone, ExternalLink, Calendar, ChevronDown, Code2, Database, Cloud, Lightbulb, Layers } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Footer from "./Footer";
 import SpotifyRecentlyPlayed from "./SpotifyRecentlyPlayed";
+import ContactModal from "./ContactModal";
 
 /* ─── Data ─── */
 const greetings = [
@@ -11,34 +12,38 @@ const greetings = [
     'ssup', 'ahoy', 'aloha', 'howdy', 'gday'
 ];
 
-const ABOUT_ITEMS = [
-    {
-        icon: <GraduationCap className="w-4 h-4" />,
-        text: (
-            <>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">College of Engineering Pune</span> — Electronics & Telecommunication
-            </>
-        ),
-    },
-    {
-        icon: <Briefcase className="w-4 h-4" />,
-        text: (
-            <>
-                SDE <span className="font-medium text-zinc-800 dark:text-zinc-200">@Bajaj Finserv</span> — building backend systems that actually stay up
-            </>
-        ),
-    },
-    {
-        icon: <MapPin className="w-4 h-4" />,
-        text: <>Based in <span className="font-medium text-zinc-800 dark:text-zinc-200">Pune, India</span></>,
-    },
-];
 
-const INTERESTS = [
-    { emoji: '🏎️', label: 'F1 Strategy', color: 'from-red-500/20 to-red-500/5' },
-    { emoji: '🏏', label: 'Cricket', color: 'from-green-500/20 to-green-500/5' },
-    { emoji: '🍿', label: 'Cinema', color: 'from-yellow-500/20 to-yellow-500/5', href: 'https://app.tvtime.com/user/51516957' },
-    { emoji: <Instagram className="w-4 h-4" />, label: 'Instagram', color: 'from-purple-500/20 to-purple-500/5', href: 'https://instagram.com/pratik.76' },
+const EXPERIENCE = [
+    {
+        date: 'Jul 2024 — Present',
+        role: 'Software Developer',
+        company: 'Bajaj Finserv',
+        type: 'Full-time',
+        location: 'Pune, Maharashtra · On-site',
+        description: 'Building & maintaining high-availability backend systems powering financial services at scale.',
+        tags: ['Java', 'Spring Boot', 'Microservices', 'REST API', 'PostgreSQL', 'Redis', 'Docker', 'Kafka', 'Git'],
+        highlight: true,
+    },
+    {
+        date: 'Jan 2024 — Jun 2024',
+        role: 'SDE Intern',
+        company: 'Bajaj Finserv',
+        type: 'Internship',
+        location: 'Pune, Maharashtra · On-site',
+        description: 'Worked on backend development and API integrations for internal tools and financial products.',
+        tags: ['Java', 'Spring Boot', 'REST API', 'SQL'],
+        highlight: false,
+    },
+    {
+        date: '2020 — 2024',
+        role: 'BTech — Electronics & Telecommunication',
+        company: 'College of Engineering Pune (COEP)',
+        type: 'Education',
+        location: 'Pune, Maharashtra',
+        description: 'Focused on software engineering, data structures, and system design. Built multiple full-stack projects and contributed to open-source.',
+        tags: ['DSA', 'Embedded Systems', 'Full-Stack', 'Open Source'],
+        highlight: false,
+    },
 ];
 
 const PROJECTS = [
@@ -58,11 +63,11 @@ const PROJECTS = [
     },
 ];
 
-const LINKS = [
+const LINKS: { label: string; href: string; icon: JSX.Element; isContact?: boolean }[] = [
     { label: 'GitHub', href: 'https://github.com/pratikt76', icon: <Github className="w-4 h-4" /> },
     { label: 'LinkedIn', href: 'https://linkedin.com/in/pratikt76', icon: <Linkedin className="w-4 h-4" /> },
-    { label: 'Email', href: 'mailto:psthombare03@gmail.com', icon: <Mail className="w-4 h-4" /> },
-    { label: 'Resume', href: 'https://usflwosegyavcshohacz.supabase.co/storage/v1/object/public/Pratik_Thombare_Resume/Pratik_Thombare.pdf', icon: <FileText className="w-4 h-4" /> },
+    { label: 'Email', href: '#contact', icon: <Mail className="w-4 h-4" />, isContact: true },
+    { label: 'Resume', href: 'https://drive.google.com/file/d/1VLOhNIh_EFSARD6z6wfiM8OpADZmWSq3/view?usp=sharing', icon: <FileText className="w-4 h-4" /> },
 ];
 
 /* ─── Hooks ─── */
@@ -145,6 +150,7 @@ function ThemeToggle({ isDark, toggle }: { isDark: boolean; toggle: () => void }
 export default function PratikMinimalPortfolio(): JSX.Element {
     const [greeting, setGreeting] = useState(greetings[0]);
     const [isTimeHovered, setIsTimeHovered] = useState(false);
+    const [isContactOpen, setIsContactOpen] = useState(false);
     const epochTime = useEpochTime();
     const { x, y } = useMousePosition();
     const { isDark, toggle } = useTheme();
@@ -256,16 +262,27 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                         </div>
                         <div className="flex items-center gap-1">
                             {LINKS.map((l) => (
-                                <a
-                                    key={l.label}
-                                    href={l.href}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-2 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.06] transition-all duration-200"
-                                    title={l.label}
-                                >
-                                    {l.icon}
-                                </a>
+                                l.isContact ? (
+                                    <button
+                                        key={l.label}
+                                        onClick={() => setIsContactOpen(true)}
+                                        className="p-2 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.06] transition-all duration-200"
+                                        title={l.label}
+                                    >
+                                        {l.icon}
+                                    </button>
+                                ) : (
+                                    <a
+                                        key={l.label}
+                                        href={l.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 rounded-lg text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.06] transition-all duration-200"
+                                        title={l.label}
+                                    >
+                                        {l.icon}
+                                    </a>
+                                )
                             ))}
                             <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-800 mx-1" />
                             <ThemeToggle isDark={isDark} toggle={toggle} />
@@ -327,6 +344,22 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                 </motion.span>
                             </h1>
 
+                            {/* Role title */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.7 }}
+                                className="flex items-center gap-3 mb-5"
+                            >
+                                <span className="text-sm sm:text-base font-medium text-zinc-600 dark:text-zinc-400">
+                                    Software Developer
+                                </span>
+                                <span className="text-zinc-300 dark:text-zinc-700">@</span>
+                                <span className="text-sm sm:text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent">
+                                    Bajaj Finserv
+                                </span>
+                            </motion.div>
+
                             {/* Subtitle */}
                             <motion.p
                                 initial={{ opacity: 0 }}
@@ -338,47 +371,197 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                 Spring Boot & Java — with a touch of
                                 frontend know-how<span className="animate-pulse text-blue-500 dark:text-blue-400">_</span>
                             </motion.p>
+
+                            {/* Scroll indicator */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.6, delay: 1.4 }}
+                                className="mt-14 flex flex-col items-center gap-1"
+                            >
+                                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-zinc-300 dark:text-zinc-700">scroll</span>
+                                <motion.div
+                                    animate={{ y: [0, 6, 0] }}
+                                    transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                                >
+                                    <ChevronDown className="w-4 h-4 text-zinc-300 dark:text-zinc-700" />
+                                </motion.div>
+                            </motion.div>
                         </motion.header>
                     </motion.div>
 
-                    {/* ── About ── */}
+                    {/* ── Experience ── */}
                     <motion.section variants={fadeUp}>
-                        <SectionHeading label="01 — About" />
-                        <div className="space-y-3 mb-10">
-                            {ABOUT_ITEMS.map((item, i) => (
+                        <SectionHeading label="01 — Journey" />
+                        <div className="relative">
+                            {/* Vertical timeline line */}
+                            <div className="absolute left-[7px] sm:left-[9px] top-3 bottom-3 w-px bg-gradient-to-b from-blue-500/40 via-zinc-300 dark:via-zinc-700 to-transparent" />
+
+                            <div className="space-y-10">
+                                {EXPERIENCE.map((exp, i) => (
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        whileInView={{ opacity: 1, x: 0 }}
+                                        viewport={{ once: true, margin: '-50px' }}
+                                        transition={{ duration: 0.6, delay: i * 0.15, ease: [0.25, 0.4, 0.25, 1] }}
+                                        className="relative pl-8 sm:pl-10 group"
+                                    >
+                                        {/* Timeline dot */}
+                                        <div className={`absolute left-0 top-1.5 w-[15px] h-[15px] sm:w-[19px] sm:h-[19px] rounded-full border-2 transition-colors duration-300
+                                            ${exp.highlight
+                                                ? 'border-blue-500 bg-blue-500/20 group-hover:bg-blue-500/40 shadow-[0_0_12px_rgba(59,130,246,0.3)]'
+                                                : 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 group-hover:border-zinc-400 dark:group-hover:border-zinc-500'
+                                            }`}
+                                        >
+                                            {exp.highlight && (
+                                                <span className="absolute inset-0 rounded-full animate-ping bg-blue-500/30" />
+                                            )}
+                                        </div>
+
+                                        {/* Content card */}
+                                        <div className={`p-6 sm:p-7 rounded-2xl border transition-all duration-500 group-hover:shadow-lg group-hover:backdrop-blur-sm
+                                            ${exp.highlight
+                                                ? 'bg-gradient-to-br from-blue-500/[0.06] to-purple-500/[0.04] border-blue-500/15 dark:border-blue-500/15 group-hover:border-blue-500/30 group-hover:shadow-blue-500/10'
+                                                : 'bg-black/[0.02] dark:bg-white/[0.02] border-black/[0.06] dark:border-white/[0.06] group-hover:border-black/[0.12] dark:group-hover:border-white/[0.12]'
+                                            }`}
+                                        >
+                                            {/* Header row */}
+                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                <Calendar className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500" />
+                                                <span className="text-[11px] font-bold tracking-[0.15em] uppercase text-zinc-400 dark:text-zinc-500">
+                                                    {exp.date}
+                                                </span>
+                                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                                <span className={`text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full border
+                                                    ${exp.type === 'Full-time' ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
+                                                        : exp.type === 'Internship' ? 'text-amber-500 bg-amber-500/10 border-amber-500/20'
+                                                            : 'text-purple-500 bg-purple-500/10 border-purple-500/20'
+                                                    }`}
+                                                >
+                                                    {exp.type}
+                                                </span>
+                                                {exp.highlight && (
+                                                    <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                                        <span className="relative flex h-1.5 w-1.5">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
+                                                        </span>
+                                                        <span className="text-[9px] font-bold tracking-wider uppercase text-blue-500">Current</span>
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-1 tracking-tight">
+                                                {exp.role}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                                                    {exp.company}
+                                                </p>
+                                                <span className="text-zinc-300 dark:text-zinc-700">·</span>
+                                                <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                                                    {exp.location}
+                                                </p>
+                                            </div>
+                                            <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-5">
+                                                {exp.description}
+                                            </p>
+
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {exp.tags.map((tag) => (
+                                                    <span
+                                                        key={tag}
+                                                        className="px-2.5 py-0.5 text-[11px] font-medium tracking-wide uppercase rounded-md border transition-colors bg-black/[0.04] dark:bg-white/[0.04] text-zinc-500 border-black/[0.06] dark:border-white/[0.05]"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    </motion.section>
+
+                    <div className="my-20" />
+
+                    {/* ── Skills ── */}
+                    <motion.section variants={fadeUp}>
+                        <SectionHeading label="02 — Skills" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                                {
+                                    category: 'Languages',
+                                    skills: ['Java (8/11/17)', 'Core Java', 'Collections', 'Concurrency', 'OOP', 'SOLID', 'SQL'],
+                                    accent: 'from-blue-500 to-blue-600',
+                                    dot: 'bg-blue-500',
+                                    icon: <Code2 className="w-3.5 h-3.5" />,
+                                },
+                                {
+                                    category: 'Frameworks & Libraries',
+                                    skills: ['Spring Boot', 'Spring MVC', 'JPA / Hibernate', 'RESTful API', 'JUnit', 'Mockito', 'Cucumber'],
+                                    accent: 'from-emerald-500 to-emerald-600',
+                                    dot: 'bg-emerald-500',
+                                    icon: <Layers className="w-3.5 h-3.5" />,
+                                },
+                                {
+                                    category: 'Databases',
+                                    skills: ['MySQL', 'PostgreSQL', 'Cosmos DB', 'MongoDB'],
+                                    accent: 'from-amber-500 to-amber-600',
+                                    dot: 'bg-amber-500',
+                                    icon: <Database className="w-3.5 h-3.5" />,
+                                },
+                                {
+                                    category: 'Cloud & DevOps',
+                                    skills: ['Docker', 'Kubernetes', 'Azure Cloud', 'CI/CD Pipelines', 'Git', 'Maven', 'Gradle'],
+                                    accent: 'from-purple-500 to-purple-600',
+                                    dot: 'bg-purple-500',
+                                    icon: <Cloud className="w-3.5 h-3.5" />,
+                                },
+                                {
+                                    category: 'Concepts',
+                                    skills: ['Microservices', 'API Debugging', 'Performance Optimization', 'Unit & Integration Testing', 'Agile / Scrum', 'Secure Coding'],
+                                    accent: 'from-rose-500 to-rose-600',
+                                    dot: 'bg-rose-500',
+                                    icon: <Lightbulb className="w-3.5 h-3.5" />,
+                                    span: true,
+                                },
+                            ].map((group) => (
                                 <motion.div
-                                    key={i}
+                                    key={group.category}
                                     variants={fadeUp}
-                                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-black/[0.03] dark:hover:bg-white/[0.02] transition-colors group"
+                                    whileHover={{ y: -4 }}
+                                    className={`relative overflow-hidden p-6 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-300 hover:shadow-lg ${(group as any).span ? 'sm:col-span-2' : ''
+                                        }`}
                                 >
-                                    <span className="mt-0.5 text-zinc-400 dark:text-zinc-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors shrink-0">
-                                        {item.icon}
-                                    </span>
-                                    <span className="text-zinc-500 dark:text-zinc-400 text-[15px] leading-relaxed">{item.text}</span>
+                                    {/* Top accent bar */}
+                                    <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${group.accent} opacity-60`} />
+
+                                    {/* Category header */}
+                                    <div className="flex items-center gap-2.5 mb-4">
+                                        <span className={`flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-br ${group.accent} text-white/90`}>
+                                            {(group as any).icon}
+                                        </span>
+                                        <h3 className="text-[12px] font-bold tracking-[0.12em] uppercase text-zinc-500 dark:text-zinc-400">
+                                            {group.category}
+                                        </h3>
+                                    </div>
+
+                                    {/* Skills */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {group.skills.map((skill) => (
+                                            <span
+                                                key={skill}
+                                                className="px-3 py-1 rounded-md text-[12px] font-medium bg-black/[0.04] dark:bg-white/[0.05] text-zinc-600 dark:text-zinc-300 border border-black/[0.04] dark:border-white/[0.04] select-none hover:bg-black/[0.08] dark:hover:bg-white/[0.08] hover:scale-[1.04] transition-all duration-200 cursor-default"
+                                            >
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </motion.div>
                             ))}
-                        </div>
-
-                        {/* Interest pills */}
-                        <div className="flex flex-wrap gap-2.5">
-                            {INTERESTS.map((item) => {
-                                const pill = (
-                                    <motion.span
-                                        key={item.label}
-                                        whileHover={{ scale: 1.05, y: -2 }}
-                                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r ${item.color} border border-black/[0.06] dark:border-white/[0.06] text-sm text-zinc-600 dark:text-zinc-300 cursor-default select-none backdrop-blur-sm transition-colors hover:border-black/[0.12] dark:hover:border-white/[0.12]`}
-                                    >
-                                        <span className="text-base">{item.emoji}</span>
-                                        {item.label}
-                                        {item.href && <ArrowUpRight className="w-3 h-3 text-zinc-400 dark:text-zinc-500" />}
-                                    </motion.span>
-                                );
-                                return item.href ? (
-                                    <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer">
-                                        {pill}
-                                    </a>
-                                ) : pill;
-                            })}
                         </div>
                     </motion.section>
 
@@ -386,44 +569,48 @@ export default function PratikMinimalPortfolio(): JSX.Element {
 
                     {/* ── Projects ── */}
                     <motion.section variants={fadeUp}>
-                        <SectionHeading label="02 — Work" />
+                        <SectionHeading label="03 — Work" />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {PROJECTS.map((proj) => (
+                            {PROJECTS.map((proj, i) => (
                                 <motion.article
                                     key={proj.title}
                                     whileHover={{ y: -4 }}
-                                    className="group relative bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-2xl p-7 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-500"
+                                    className="group relative overflow-hidden bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] rounded-2xl p-7 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-500"
                                 >
+                                    {/* Gradient accent bar */}
+                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-60 transition-opacity duration-500" />
+
                                     {/* Glow on hover */}
                                     <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/[0.05] to-purple-500/[0.05] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                     <div className="relative z-10">
                                         <div className="flex justify-between items-start mb-3">
-                                            <h3 className="text-lg font-semibold transition-colors text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300">
-                                                {proj.title}
-                                            </h3>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[11px] font-bold tracking-[0.15em] text-zinc-300 dark:text-zinc-700 tabular-nums">0{i + 1}</span>
+                                                <h3 className="text-lg font-semibold transition-colors text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300">
+                                                    {proj.title}
+                                                </h3>
+                                            </div>
                                             <div className="flex gap-2">
-                                                <div className="flex gap-2">
-                                                    <a
-                                                        href={proj.github}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
-                                                    >
-                                                        <Github className="w-4 h-4" />
-                                                    </a>
-                                                    <a
-                                                        href={proj.demo}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
-                                                    >
-                                                        <ArrowUpRight className="w-4 h-4" />
-                                                    </a>
-                                                </div>
+                                                <a
+                                                    href={proj.github}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
+                                                >
+                                                    <Github className="w-4 h-4" />
+                                                </a>
+                                                <a
+                                                    href={proj.demo}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="p-1.5 rounded-lg text-zinc-400 dark:text-zinc-600 hover:text-zinc-900 dark:hover:text-white hover:bg-black/[0.06] dark:hover:bg-white/[0.08] transition-all"
+                                                >
+                                                    <ArrowUpRight className="w-4 h-4" />
+                                                </a>
                                             </div>
                                         </div>
-                                        <p className="text-sm leading-relaxed mb-5 text-zinc-500">{proj.desc}</p>
+                                        <p className="text-[13px] leading-relaxed mb-5 text-zinc-500">{proj.desc}</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {proj.tags.map((tag) => (
                                                 <span
@@ -438,14 +625,6 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                 </motion.article>
                             ))}
                         </div>
-                    </motion.section>
-
-                    <div className="my-20" />
-
-                    {/* ── Spotify ── */}
-                    <motion.section variants={fadeUp}>
-                        <SectionHeading label="03 — Vibes" />
-                        <SpotifyRecentlyPlayed />
                     </motion.section>
 
                     <div className="my-20" />
@@ -496,25 +675,48 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                 {/* Links grid */}
                                 <div className="grid grid-cols-2 gap-3 flex-1">
                                     {LINKS.map((l) => (
-                                        <motion.a
-                                            key={l.label}
-                                            href={l.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            whileHover={{ y: -3, scale: 1.02 }}
-                                            className="group flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-300"
-                                        >
-                                            <span className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                                {l.icon}
-                                            </span>
-                                            <span className="text-xs font-bold tracking-[0.15em] uppercase text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-                                                {l.label}
-                                            </span>
-                                        </motion.a>
+                                        l.isContact ? (
+                                            <motion.button
+                                                key={l.label}
+                                                onClick={() => setIsContactOpen(true)}
+                                                whileHover={{ y: -3, scale: 1.02 }}
+                                                className="group flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-300"
+                                            >
+                                                <span className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                                    {l.icon}
+                                                </span>
+                                                <span className="text-xs font-bold tracking-[0.15em] uppercase text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                                                    {l.label}
+                                                </span>
+                                            </motion.button>
+                                        ) : (
+                                            <motion.a
+                                                key={l.label}
+                                                href={l.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                whileHover={{ y: -3, scale: 1.02 }}
+                                                className="group flex flex-col items-center justify-center gap-3 p-5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.06] dark:border-white/[0.06] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] hover:border-black/[0.12] dark:hover:border-white/[0.12] transition-all duration-300"
+                                            >
+                                                <span className="text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                                    {l.icon}
+                                                </span>
+                                                <span className="text-xs font-bold tracking-[0.15em] uppercase text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                                                    {l.label}
+                                                </span>
+                                            </motion.a>
+                                        )
                                     ))}
                                 </div>
                             </div>
                         </div>
+                    </motion.section>
+
+                    <div className="my-20" />
+
+                    {/* ── Spotify Marquee ── */}
+                    <motion.section variants={fadeUp}>
+                        <SpotifyRecentlyPlayed />
                     </motion.section>
 
                     <motion.div variants={fadeUp}>
@@ -522,6 +724,9 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                     </motion.div>
                 </motion.div>
             </main>
+
+            {/* Contact Modal */}
+            <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
         </Fragment>
     );
 }
