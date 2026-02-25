@@ -1,24 +1,25 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: 'class',
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      textShadow: { // custom key for plugin usage
-        glow: '0 0 8px #facc15, 0 0 12px #facc15',
+      fontFamily: {
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+      },
+      colors: {
+        term: {
+          bg: 'var(--term-bg)',
+          titlebar: 'var(--term-titlebar)',
+          border: 'var(--term-border)',
+          text: 'var(--term-text)',
+          muted: 'var(--term-muted)',
+          prompt: 'var(--term-prompt)',
+          accent: 'var(--term-accent)',
+          success: 'var(--term-success)',
+          link: 'var(--term-link)',
+        },
       },
     },
   },
-  plugins: [
-    function ({ addUtilities }) {
-      addUtilities({
-        '.text-glow': {
-          textShadow: '0 0 8px #facc15, 0 0 12px #facc15',
-        },
-        '.text-glow-hover:hover': {
-          textShadow: '0 0 8px #facc15, 0 0 12px #facc15',
-        },
-      });
-    },
-  ],
+  plugins: [],
 };
