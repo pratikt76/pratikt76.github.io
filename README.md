@@ -1,52 +1,83 @@
-# Pratik Minimal Portfolio
+# Pratik Thombare — Terminal Portfolio
 
-![Portfolio](https://img.shields.io/badge/Portfolio-live-blue) ![React](https://img.shields.io/badge/React-17-blue) ![Tailwind](https://img.shields.io/badge/TailwindCSS-3.3.2-green)
+![Portfolio](https://img.shields.io/badge/Portfolio-live-blue) ![React](https://img.shields.io/badge/React-18-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-green)
 
-Hi, I'm **Pratik** 👋 — a Software Development Engineer passionate about building reliable backend systems with Spring Boot and sprinkling tasteful frontend polish.  
-
----
-
-## 🚀 About
-
-- Graduated from **College of Engineering Pune (Electronics & Telecommunication)** 🎓  
-- Currently building maintainable backend solutions  
-- Projects focus on **clarity, reliability, and practical delivery**  
+A fully interactive **desktop OS simulator** built as a developer portfolio. Features a working terminal emulator, draggable/resizable windows, animated wallpapers, desktop widgets, and more — all in the browser.
 
 ---
 
-## 🛠️ Projects
+## ✨ Features
 
-### [Parkin](https://github.com/pratikt76/Parkin)
-Smart parking management system — optimizing slot allocation and availability tracking.  
-[GitHub](https://github.com/pratikt76/Parkin) | [Live Demo](https://github.com/pratikt76/Parkin/blob/main/README.md)
+### 🖥️ Terminal Emulator
+- Fully functional command-line interface with 30+ commands
+- Commands: `help`, `about`, `skills`, `experience`, `projects`, `contact`, `resume`, `neofetch`, `spotify`, `theme`, `wallpaper`, and more
+- Command history (↑/↓ arrows) and tab support
+- Interactive modes: typing test, trivia, number guessing, Tetris
 
-### [VelocityCSS](https://github.com/pratikt76/VelocityCSS)
-Lightweight CSS utility framework — faster styling without unnecessary bloat.  
-[GitHub](https://github.com/pratikt76/VelocityCSS) | [Live Demo](https://pratikt76.github.io/VelocityCSS/)
+### 🪟 Desktop Environment
+- **Draggable & resizable terminal** — move and resize like a real window
+- **Window controls** — red (minimize), yellow (minimize), green (maximize/restore)
+- **Desktop icons** — GitHub, LinkedIn, Resume, Mail Me, Instagram, Spotify
+- **Right-click context menu** — change wallpaper, open terminal, contact, view resume, refresh
+- **Boot splash screen** — BIOS-style startup animation with progress bar
+
+### 🎨 8-Bit Animated Wallpapers
+Switch wallpapers via `wallpaper <name>` command or right-click menu:
+- 🏙️ **City** — purple/orange skyline with rain animation
+- ⛰️ **Mountains** — night peaks with glowing moon
+- 🌌 **Space** — deep starfield with twinkling stars
+- 🌲 **Forest** — dark silhouette with floating fireflies
+- 🌊 **Ocean** — deep blue gradient with drifting waves
+- 🏎️ **F1** — dark racetrack with moving stripes & checkered flag
+- 🏏 **Cricket** — green pitch with crease lines & moonlight
+
+### 📊 Desktop Widgets
+- **Clock** — live time with gradient text
+- **Calendar** — current month with today highlighted
+- **Spotify** — currently/recently playing track with album art
+
+### 🎵 Spotify Integration
+- Desktop widget shows now playing
+- Click Spotify icon to see recently played tracks with album art
+- `spotify` command lists recent tracks in terminal
+
+### 🎨 Multi-Theme Support
+5 themes: `dark`, `light`, `monokai`, `dracula`, `nord`
+
+### 🔊 Sound Effects
+Toggle with `sound on/off` — mechanical keyboard sounds for typing
 
 ---
 
-## 📫 Connect with me
+## 🛠️ Tech Stack
 
-- [LinkedIn](https://linkedin.com/in/pratikt76)  
-- [GitHub](https://github.com/pratikt76)  
-- [Instagram](https://instagram.com/pratik.76)  
-
----
-
-## ⚡ Features
-
-- Minimal, responsive design  
-- Fast-loading, single-page portfolio  
-- Dark mode by default with crisp typography  
-- Fun facts & social links with hover effects  
+- **React 18** + **TypeScript**
+- **Tailwind CSS** + custom CSS animations
+- **Vite** for blazing-fast dev/build
+- **Spotify API** integration
+- **FormSubmit** for contact form
 
 ---
 
-## 💻 Run Locally
+## 🚀 Run Locally
 
 ```bash
-git clone https://github.com/pratikt76/pratikt76.github.io.git
-cd pratikt76.github.io
-yarn install
-yarn dev
+git clone https://github.com/pratikt76/portfolio-pratikthombare.git
+cd portfolio-pratikthombare
+npm install
+npm run dev
+```
+
+---
+
+## 📫 Connect
+
+- [LinkedIn](https://linkedin.com/in/pratikt76)
+- [GitHub](https://github.com/pratikt76)
+- [Instagram](https://instagram.com/pratik.76)
+
+---
+
+## 📝 License
+
+© 2026 Pratik Thombare. All rights reserved.
