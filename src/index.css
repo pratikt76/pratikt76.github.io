@@ -103,14 +103,1169 @@
    ═══════════════════════════════════════════ */
 
 body {
-  background-color: var(--term-bg);
+  background-color: #0a0a0f;
   color: var(--term-text);
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow: hidden;
+  margin: 0;
 }
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
+}
+
+/* ═══════════════════════════════════════════
+   DESKTOP LAYOUT
+   ═══════════════════════════════════════════ */
+
+.desktop-layout {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(60, 100, 180, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(100, 60, 180, 0.04) 0%, transparent 50%),
+    #0a0a0f;
+}
+
+/* Terminal window — draggable & resizable */
+.terminal-window {
+  position: absolute;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--term-border);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(80, 120, 200, 0.04);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--term-bg);
+  transition: box-shadow 0.2s ease;
+  z-index: 10;
+  max-height: calc(100vh - 130px);
+}
+
+.terminal-window.dragging {
+  transition: none;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    0 0 100px rgba(80, 120, 200, 0.06);
+}
+
+/* Drag handle (title bar) */
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  z-index: 20;
+}
+
+.resize-handle-e {
+  right: -3px;
+  top: 10px;
+  bottom: 10px;
+  width: 6px;
+  cursor: e-resize;
+}
+
+.resize-handle-s {
+  bottom: -3px;
+  left: 10px;
+  right: 10px;
+  height: 6px;
+  cursor: s-resize;
+}
+
+.resize-handle-se {
+  right: -3px;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  cursor: se-resize;
+}
+
+/* Desktop icons area — right side */
+.desktop-icons {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  gap: 20px;
+  z-index: 5;
+}
+
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  width: 90px;
+  user-select: none;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.05);
+}
+
+.desktop-icon:active {
+  transform: scale(0.97);
+}
+
+.desktop-icon .icon-img {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 26px;
+  transition: box-shadow 0.2s ease;
+}
+
+.desktop-icon:hover .icon-img {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.desktop-icon .icon-label {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  line-height: 1.3;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ═══════════════════════════════════════════
+   CONTACT MODAL WINDOW
+   ═══════════════════════════════════════════ */
+
+.contact-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.contact-modal {
+  width: min(440px, 90vw);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--term-border);
+  background-color: var(--term-bg);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 80px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.25s ease;
+}
+
+.contact-modal .modal-titlebar {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  background: var(--term-titlebar);
+  border-bottom: 1px solid var(--term-border);
+  user-select: none;
+}
+
+.contact-modal .modal-body {
+  padding: 24px;
+}
+
+.contact-modal input,
+.contact-modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--term-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--term-text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+}
+
+.contact-modal input:focus,
+.contact-modal textarea:focus {
+  border-color: var(--term-accent);
+}
+
+.contact-modal textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.contact-modal .modal-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--term-accent);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.contact-modal .modal-btn:hover {
+  opacity: 0.9;
+}
+
+.contact-modal .modal-btn:active {
+  transform: scale(0.98);
+}
+
+.contact-modal .modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.contact-modal label {
+  display: block;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--term-muted);
+  margin-bottom: 6px;
+}
+
+/* ═══════════════════════════════════════════
+   PREVIEW WINDOW (iframe)
+   ═══════════════════════════════════════════ */
+
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.preview-window {
+  width: min(800px, 90vw);
+  height: min(600px, 80vh);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--term-border);
+  background-color: var(--term-bg);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 24px 80px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.25s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-window .preview-titlebar {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  background: var(--term-titlebar);
+  border-bottom: 1px solid var(--term-border);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.preview-window .preview-titlebar .open-tab-btn {
+  margin-left: auto;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--term-accent);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--term-border);
+  border-radius: 4px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.preview-window .preview-titlebar .open-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.preview-window iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #fff;
+}
+
+/* ═══════════════════════════════════════════
+   8-BIT WALLPAPERS (CSS pixel art)
+   ═══════════════════════════════════════════ */
+
+.desktop-wallpaper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+/* City skyline */
+.wallpaper-city {
+  background:
+    linear-gradient(180deg, #1a0533 0%, #2d1b4e 30%, #4a2066 50%, #6b3fa0 65%, #e85d04 80%, #f48c06 90%, #0a0a0f 90.1%);
+}
+
+.wallpaper-city::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background:
+    linear-gradient(0deg, #0a0a0f 0%, transparent 100%),
+    repeating-linear-gradient(90deg,
+      transparent 0px, transparent 30px,
+      rgba(255, 255, 255, 0.03) 30px, rgba(255, 255, 255, 0.03) 32px),
+    repeating-linear-gradient(90deg,
+      #111 0px, #111 40px,
+      #1a1a2e 40px, #1a1a2e 42px,
+      #1a1a2e 42px, #1a1a2e 80px,
+      #151525 80px, #151525 82px);
+}
+
+.wallpaper-city::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 10% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 15%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 8%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 25%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 12%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 30%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 35%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 50% 5%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 18%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 33% 28%, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+}
+
+/* Mountains */
+.wallpaper-mountains {
+  background: linear-gradient(180deg, #0f0c29 0%, #302b63 40%, #24243e 60%, #0f0c29 100%);
+}
+
+.wallpaper-mountains::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background:
+    linear-gradient(135deg, transparent 33%, #1a1a3e 33%, #1a1a3e 34%, transparent 34%) -50px 0 / 200px 100% no-repeat,
+    linear-gradient(225deg, transparent 33%, #1a1a3e 33%, #1a1a3e 34%, transparent 34%) 50px 0 / 200px 100% no-repeat,
+    linear-gradient(135deg, transparent 38%, #151530 38%, #151530 39%, transparent 39%) 100px 20px / 250px 100% no-repeat,
+    linear-gradient(225deg, transparent 38%, #151530 38%, #151530 39%, transparent 39%) 200px 20px / 250px 100% no-repeat,
+    linear-gradient(135deg, transparent 42%, #121228 42%, #121228 43%, transparent 43%) 300px 40px / 300px 100% no-repeat,
+    linear-gradient(225deg, transparent 42%, #121228 42%, #121228 43%, transparent 43%) 400px 40px / 300px 100% no-repeat,
+    linear-gradient(0deg, #0a0a18 0%, transparent 40%);
+}
+
+.wallpaper-mountains::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8dc 30%, rgba(255, 248, 220, 0.2) 70%, transparent 100%);
+  box-shadow: 0 0 40px 20px rgba(255, 248, 220, 0.15);
+}
+
+/* Space */
+.wallpaper-space {
+  background: radial-gradient(ellipse at 30% 20%, #1a0533 0%, #0a0a1a 50%, #000 100%);
+}
+
+.wallpaper-space::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 5% 10%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 12% 45%, #88f 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 25%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 70%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 40% 15%, #f8f 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 55%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+    radial-gradient(2px 2px at 75% 65%, #8ff 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 75%, rgba(255, 255, 255, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 80%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 48% 40%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 85%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 82% 48%, #fff 0%, transparent 100%),
+    radial-gradient(2px 2px at 35% 35%, #ff8 0%, transparent 100%);
+}
+
+.wallpaper-space::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 15%;
+  width: 200px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(100, 50, 180, 0.15) 0%, transparent 70%);
+  filter: blur(20px);
+}
+
+/* Forest */
+.wallpaper-forest {
+  background: linear-gradient(180deg, #0a1628 0%, #0d2137 30%, #0a2e1a 60%, #051a0a 100%);
+}
+
+.wallpaper-forest::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background:
+    /* trees (triangles) */
+    linear-gradient(225deg, transparent 48%, #0a3d0f 48%, #0a3d0f 50%, transparent 50%) 0 0 / 60px 80px repeat-x,
+    linear-gradient(135deg, transparent 48%, #0a3d0f 48%, #0a3d0f 50%, transparent 50%) 0 0 / 60px 80px repeat-x,
+    linear-gradient(225deg, transparent 48%, #083a0c 48%, #083a0c 50%, transparent 50%) 30px 40px / 80px 100px repeat-x,
+    linear-gradient(135deg, transparent 48%, #083a0c 48%, #083a0c 50%, transparent 50%) 30px 40px / 80px 100px repeat-x,
+    linear-gradient(0deg, #051a0a 0%, transparent 60%);
+}
+
+/* Ocean */
+.wallpaper-ocean {
+  background: linear-gradient(180deg, #0c1445 0%, #1a237e 25%, #0d47a1 50%, #01579b 70%, #006064 100%);
+}
+
+.wallpaper-ocean::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background:
+    repeating-linear-gradient(0deg,
+      transparent 0px, transparent 8px,
+      rgba(255, 255, 255, 0.03) 8px, rgba(255, 255, 255, 0.03) 10px),
+    linear-gradient(0deg, #002244 0%, transparent 100%);
+  animation: ocean-wave 4s ease-in-out infinite;
+}
+
+@keyframes ocean-wave {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* F1 racetrack */
+.wallpaper-f1 {
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 20%, #16213e 50%, #0a0a0a 100%);
+}
+
+.wallpaper-f1::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  background:
+    /* asphalt road */
+    linear-gradient(0deg, #1a1a1a 0%, #222 60%, transparent 100%),
+    /* racing lines */
+    repeating-linear-gradient(90deg,
+      transparent 0px, transparent 80px,
+      rgba(255, 0, 0, 0.15) 80px, rgba(255, 0, 0, 0.15) 84px,
+      transparent 84px, transparent 88px,
+      rgba(255, 255, 255, 0.08) 88px, rgba(255, 255, 255, 0.08) 92px);
+}
+
+.wallpaper-f1::after {
+  content: '';
+  position: absolute;
+  top: 8%;
+  right: 8%;
+  width: 120px;
+  height: 80px;
+  background:
+    /* checkered flag pattern */
+    repeating-conic-gradient(#fff 0% 25%, #111 0% 50%) 0 0 / 20px 20px;
+  opacity: 0.12;
+  border-radius: 4px;
+}
+
+/* Cricket pitch */
+.wallpaper-cricket {
+  background: linear-gradient(180deg, #0a1628 0%, #0d2137 25%, #0a3d1a 55%, #072e10 100%);
+}
+
+.wallpaper-cricket::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background:
+    /* pitch strip in center */
+    linear-gradient(90deg,
+      transparent 0%, transparent 42%,
+      rgba(194, 178, 128, 0.12) 42%, rgba(194, 178, 128, 0.12) 58%,
+      transparent 58%),
+    /* crease lines */
+    linear-gradient(0deg,
+      transparent 0%, transparent 28%,
+      rgba(255, 255, 255, 0.08) 28%, rgba(255, 255, 255, 0.08) 29%,
+      transparent 29%, transparent 70%,
+      rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0.08) 71%,
+      transparent 71%),
+    /* outfield gradient */
+    radial-gradient(ellipse at 50% 100%, #0a4d1a 0%, #062e0e 60%, transparent 100%);
+}
+
+.wallpaper-cricket::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 15%;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 248, 220, 0.8) 10%, rgba(255, 248, 220, 0.1) 50%, transparent 70%);
+  box-shadow: 0 0 30px 15px rgba(255, 248, 220, 0.08);
+}
+
+/* None (default dark) */
+.wallpaper-none {
+  background: transparent;
+}
+
+/* ═══════════════════════════════════════════
+   WALLPAPER ANIMATIONS
+   ═══════════════════════════════════════════ */
+
+/* Twinkling stars for space */
+.wallpaper-space .twinkle-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.wallpaper-space .twinkle-layer span {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+/* Rain for city */
+.wallpaper-city .rain-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.wallpaper-city .rain-layer span {
+  position: absolute;
+  top: -20px;
+  width: 1px;
+  height: 15px;
+  background: linear-gradient(transparent, rgba(174, 194, 224, 0.3));
+  animation: rain-fall linear infinite;
+}
+
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-20px);
+  }
+
+  100% {
+    transform: translateY(110vh);
+  }
+}
+
+/* Fireflies for forest */
+.wallpaper-forest .firefly-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.wallpaper-forest .firefly-layer span {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffe066;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 2px rgba(255, 224, 102, 0.4);
+  animation: firefly 6s ease-in-out infinite;
+}
+
+@keyframes firefly {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translate(20px, -15px);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: translate(-10px, -30px);
+  }
+
+  75% {
+    opacity: 1;
+    transform: translate(15px, -10px);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+}
+
+/* Moving stripes for F1 */
+.wallpaper-f1 .stripe-layer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.wallpaper-f1 .stripe-layer::before {
+  content: '';
+  position: absolute;
+  bottom: 20%;
+  left: -100%;
+  width: 300%;
+  height: 3px;
+  background: repeating-linear-gradient(90deg,
+      transparent 0px, transparent 40px,
+      rgba(255, 255, 255, 0.1) 40px, rgba(255, 255, 255, 0.1) 80px);
+  animation: road-move 2s linear infinite;
+}
+
+@keyframes road-move {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(80px);
+  }
+}
+
+/* Ocean waves enhanced */
+.wallpaper-ocean .wave-layer {
+  position: absolute;
+  bottom: 20%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 1;
+  animation: wave-drift 5s ease-in-out infinite;
+}
+
+@keyframes wave-drift {
+
+  0%,
+  100% {
+    transform: translateX(0) scaleX(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: translateX(30px) scaleX(1.1);
+    opacity: 0.6;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   WINDOW STATES (minimize / maximize)
+   ═══════════════════════════════════════════ */
+
+.terminal-window.minimized {
+  height: 40px !important;
+  min-height: 40px;
+  overflow: hidden;
+  transition: height 0.3s ease, width 0.3s ease;
+}
+
+.terminal-window.minimized .resize-handle,
+.terminal-window.minimized>div:not(.drag-handle) {
+  display: none;
+}
+
+.terminal-window.maximized {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  transition: all 0.3s ease;
+  z-index: 50;
+}
+
+.terminal-window.maximized>div:first-child {
+  border-radius: 0 !important;
+}
+
+.terminal-window.maximized>div:last-of-type:not(.resize-handle) {
+  border-radius: 0 !important;
+}
+
+/* ═══════════════════════════════════════════
+   DESKTOP WIDGETS
+   ═══════════════════════════════════════════ */
+
+.desktop-widgets {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 5;
+  flex-wrap: wrap;
+  max-width: 500px;
+}
+
+.widget-card {
+  background: rgba(15, 15, 25, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+/* Clock widget */
+.widget-clock {
+  min-width: 140px;
+  text-align: center;
+}
+
+.widget-clock .clock-time {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--term-accent), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.widget-clock .clock-date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 4px;
+}
+
+/* Calendar widget */
+.widget-calendar {
+  min-width: 200px;
+}
+
+.widget-calendar .cal-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--term-accent);
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.widget-calendar .cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+  font-size: 9px;
+}
+
+.widget-calendar .cal-grid .cal-day-name {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.widget-calendar .cal-grid .cal-day {
+  padding: 3px 0;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.widget-calendar .cal-grid .cal-day.today {
+  background: var(--term-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.widget-calendar .cal-grid .cal-day.empty {
+  visibility: hidden;
+}
+
+/* Spotify widget */
+.widget-spotify {
+  min-width: 200px;
+  max-width: 220px;
+}
+
+.widget-spotify .sp-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #1db954;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.widget-spotify .sp-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+}
+
+.widget-spotify .sp-track .sp-art {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.widget-spotify .sp-track .sp-info {
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.widget-spotify .sp-track .sp-name {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.widget-spotify .sp-track .sp-artist {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═══════════════════════════════════════════
+   RIGHT-CLICK CONTEXT MENU
+   ═══════════════════════════════════════════ */
+
+.context-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 200px;
+  background: rgba(20, 20, 30, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  font-family: 'JetBrains Mono', monospace;
+  animation: fadeIn 0.12s ease;
+}
+
+.context-menu .ctx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 14px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.context-menu .ctx-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.context-menu .ctx-item .ctx-shortcut {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.3);
+  margin-left: 24px;
+}
+
+.context-menu .ctx-item .ctx-icon {
+  margin-right: 8px;
+  opacity: 0.6;
+}
+
+.context-menu .ctx-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 0;
+}
+
+.context-menu .ctx-item.ctx-submenu {
+  position: relative;
+}
+
+.context-menu .ctx-sub {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -4px;
+  min-width: 160px;
+  background: rgba(20, 20, 30, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.context-menu .ctx-submenu:hover .ctx-sub {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════
+   BOOT / SPLASH SCREEN
+   ═══════════════════════════════════════════ */
+
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  color: rgba(255, 255, 255, 0.7);
+  transition: opacity 0.6s ease;
+}
+
+.boot-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-screen .boot-logo {
+  font-size: 10px;
+  line-height: 1.1;
+  color: var(--term-accent, #60a5fa);
+  white-space: pre;
+  text-align: center;
+  margin-bottom: 30px;
+  animation: bootGlow 2s ease-in-out infinite;
+}
+
+@keyframes bootGlow {
+
+  0%,
+  100% {
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+  }
+
+  50% {
+    text-shadow: 0 0 20px rgba(96, 165, 250, 0.6), 0 0 40px rgba(96, 165, 250, 0.2);
+  }
+}
+
+.boot-screen .boot-lines {
+  font-size: 11px;
+  line-height: 1.8;
+  width: 400px;
+  max-width: 90vw;
+  margin-bottom: 30px;
+}
+
+.boot-screen .boot-line {
+  opacity: 0;
+  animation: bootLineIn 0.3s ease forwards;
+}
+
+@keyframes bootLineIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.boot-screen .boot-line .ok {
+  color: #4ade80;
+}
+
+.boot-screen .boot-line .warn {
+  color: #facc15;
+}
+
+.boot-screen .boot-progress {
+  width: 300px;
+  max-width: 80vw;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-screen .boot-progress .boot-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--term-accent, #60a5fa), #a78bfa);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.boot-screen .boot-version {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.2);
+  margin-top: 16px;
+}
+
+/* Mobile: icons at bottom */
+@media (max-width: 768px) {
+  .desktop-icons {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: center;
+    padding: 8px;
+    gap: 12px;
+    background: rgba(10, 10, 15, 0.9);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .desktop-icon {
+    width: auto;
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .desktop-icon .icon-img {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    border-radius: 8px;
+  }
+
+  .desktop-icon .icon-label {
+    font-size: 8px;
+  }
 }
 
 /* Custom scrollbar — thin, terminal style */

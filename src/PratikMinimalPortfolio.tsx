@@ -79,6 +79,9 @@ const TRIVIA = [
 
 const SPOTIFY_API = 'https://spotify-api-khaki.vercel.app/api/spotify';
 
+const WALLPAPERS = ['city', 'mountains', 'space', 'forest', 'ocean', 'f1', 'cricket', 'none'] as const;
+type WallpaperName = typeof WALLPAPERS[number];
+
 /* ═══════════════════════════════════════════════════════
    TYPES
    ═══════════════════════════════════════════════════════ */
@@ -252,6 +255,8 @@ function runCommand(
     theme: ThemeName,
     setTheme: (v: ThemeName) => void,
     startTime: number,
+    wallpaper: WallpaperName,
+    setWallpaper: (v: WallpaperName) => void,
 ): { lines: OutputLine[]; interactive?: InteractiveMode; fetchSpotify?: boolean } {
     const trimmed = raw.trim();
     if (!trimmed) return { lines: [] };
@@ -280,6 +285,7 @@ function runCommand(
                 { type: 'success', content: '  [tools]' },
                 { type: 'text', content: '    theme <name>   switch theme (dark light monokai dracula nord)' },
                 { type: 'text', content: '    sound <on|off>  toggle typing sounds' },
+                { type: 'text', content: '    wallpaper <n>  set 8-bit wallpaper (city mountains space forest ocean none)' },
                 { type: 'text', content: '    clear          clear the terminal' },
                 { type: 'text', content: '    history        command history' },
                 { type: 'text', content: '    echo <text>    echo back text' },
@@ -523,6 +529,24 @@ function runCommand(
         case 'sound':
             return { lines: [] }; // handled in component
 
+        /* ── wallpaper ── */
+        case 'wallpaper': case 'wp': case 'bg': {
+            const w = args[0]?.toLowerCase();
+            if (w && WALLPAPERS.includes(w as WallpaperName)) {
+                setWallpaper(w as WallpaperName);
+                localStorage.setItem('terminal-wallpaper', w);
+                return { lines: [{ type: 'success', content: `  Wallpaper -> ${w}` }] };
+            }
+            return {
+                lines: [
+                    { type: 'text', content: `  Current: ${wallpaper}` },
+                    { type: 'text', content: '' },
+                    { type: 'muted', content: `  Available: ${WALLPAPERS.join('  ')}` },
+                    { type: 'muted', content: '  Usage: wallpaper <name>' },
+                ]
+            };
+        }
+
         /* ── typing test ── */
         case 'typingtest': case 'typing': case 'wpm': {
             const sentence = TYPING_SENTENCES[Math.floor(Math.random() * TYPING_SENTENCES.length)];
@@ -629,11 +653,11 @@ function runCommand(
         case 'cat':
             if (args[0]) {
                 const map: Record<string, string> = { 'about.txt': 'about', 'skills.json': 'skills', 'experience.log': 'experience', 'social.md': 'social' };
-                if (map[args[0]]) return runCommand(map[args[0]], theme, setTheme, startTime);
+                if (map[args[0]]) return runCommand(map[args[0]], theme, setTheme, startTime, wallpaper, setWallpaper);
             }
             return { lines: [{ type: 'error', content: `  cat: ${args[0] || ''}: No such file` }] };
         case 'cd':
-            if (args[0]?.replace('/', '') === 'projects') return runCommand('projects', theme, setTheme, startTime);
+            if (args[0]?.replace('/', '') === 'projects') return runCommand('projects', theme, setTheme, startTime, wallpaper, setWallpaper);
             return { lines: [{ type: 'text', content: '  You\'re already home ~' }] };
         case 'pwd': return { lines: [{ type: 'text', content: '  /home/visitor/pratik-portfolio' }] };
         case 'date': return { lines: [{ type: 'text', content: `  ${new Date().toLocaleString()}` }] };
@@ -681,9 +705,154 @@ export default function PratikMinimalPortfolio(): JSX.Element {
     const { theme, setTheme } = useTheme();
     const startTimeRef = useRef(Date.now());
 
+    /* ── Wallpaper state ── */
+    const [wallpaper, setWallpaper] = useState<WallpaperName>(() => {
+        if (typeof window === 'undefined') return 'city';
+        return (localStorage.getItem('terminal-wallpaper') as WallpaperName) || 'city';
+    });
+
+    /* ── Preview window state ── */
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewTitle, setPreviewTitle] = useState('');
+
+    /* ── Window state (normal / minimized / maximized) ── */
+    const [winState, setWinState] = useState<'normal' | 'minimized' | 'maximized'>('normal');
+    const savedPosRef = useRef({ x: 16, y: 16, w: 0, h: 0 });
+
+    /* ── Clock widget ── */
+    const [clockTime, setClockTime] = useState(new Date());
+    useEffect(() => {
+        const t = setInterval(() => setClockTime(new Date()), 1000);
+        return () => clearInterval(t);
+    }, []);
+
+    /* ── Spotify widget ── */
+    const [spWidget, setSpWidget] = useState<{ name: string; artist: string; art: string; url: string } | null>(null);
+    useEffect(() => {
+        const fetchSp = () => fetch(SPOTIFY_API).then(r => r.json()).then(d => {
+            if (d.isPlaying || d.recentlyPlayed) {
+                const t = d.isPlaying ? d : d.recentlyPlayed;
+                setSpWidget({ name: t.title || t.name, artist: t.artist, art: t.albumImageUrl || t.albumArt || '', url: t.songUrl || '#' });
+            }
+        }).catch(() => { });
+        fetchSp();
+        const i = setInterval(fetchSp, 60000);
+        return () => clearInterval(i);
+    }, []);
+
+    /* ── Boot / splash screen ── */
+    const [booting, setBooting] = useState(true);
+    const [bootPhase, setBootPhase] = useState(0);
+    const [bootFade, setBootFade] = useState(false);
+    const bootLines = [
+        { text: 'Initializing system...', status: 'ok' },
+        { text: 'Loading kernel modules...', status: 'ok' },
+        { text: 'Mounting /dev/portfolio...', status: 'ok' },
+        { text: 'Starting network services...', status: 'ok' },
+        { text: 'Loading UI components...', status: 'ok' },
+        { text: 'Checking coffee supply...', status: 'warn' },
+        { text: 'All systems operational', status: 'ok' },
+    ];
+    useEffect(() => {
+        if (!booting) return;
+        if (bootPhase < bootLines.length) {
+            const t = setTimeout(() => setBootPhase(p => p + 1), 300);
+            return () => clearTimeout(t);
+        } else {
+            const t = setTimeout(() => setBootFade(true), 400);
+            const t2 = setTimeout(() => setBooting(false), 1000);
+            return () => { clearTimeout(t); clearTimeout(t2); };
+        }
+    }, [booting, bootPhase]);
+
+    /* ── Right-click context menu ── */
+    const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number } | null>(null);
+    const handleContextMenu = useCallback((e: React.MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('.terminal-window') || target.closest('.context-menu') || target.closest('.widget-card')) return;
+        e.preventDefault();
+        setCtxMenu({ x: e.clientX, y: e.clientY });
+    }, []);
+    useEffect(() => {
+        const close = () => setCtxMenu(null);
+        window.addEventListener('click', close);
+        return () => window.removeEventListener('click', close);
+    }, []);
+
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const terminalRef = useRef<HTMLDivElement>(null);
+
+    /* ── Drag & Resize state ── */
+    const [winPos, setWinPos] = useState({ x: 16, y: 16 });
+    const [winSize, setWinSize] = useState({ w: 0, h: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [isResizing, setIsResizing] = useState<null | 'e' | 's' | 'se'>(null);
+    const dragOffsetRef = useRef({ x: 0, y: 0 });
+    const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
+
+    useEffect(() => {
+        setWinSize({ w: Math.min(900, Math.floor(window.innerWidth * 0.62)), h: window.innerHeight - 32 });
+    }, []);
+
+    const handleDragStart = useCallback((e: React.MouseEvent) => {
+        if ((e.target as HTMLElement).closest('.window-btn')) return;
+        e.preventDefault();
+        setIsDragging(true);
+        dragOffsetRef.current = { x: e.clientX - winPos.x, y: e.clientY - winPos.y };
+    }, [winPos]);
+
+    const handleResizeStart = useCallback((dir: 'e' | 's' | 'se') => (e: React.MouseEvent) => {
+        e.preventDefault(); e.stopPropagation();
+        setIsResizing(dir);
+        resizeStartRef.current = { x: e.clientX, y: e.clientY, w: winSize.w, h: winSize.h };
+    }, [winSize]);
+
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            if (isDragging) {
+                setWinPos({ x: Math.max(0, Math.min(e.clientX - dragOffsetRef.current.x, window.innerWidth - 100)), y: Math.max(0, Math.min(e.clientY - dragOffsetRef.current.y, window.innerHeight - 40)) });
+            }
+            if (isResizing) {
+                const dx = e.clientX - resizeStartRef.current.x;
+                const dy = e.clientY - resizeStartRef.current.y;
+                if (isResizing === 'e' || isResizing === 'se') setWinSize(p => ({ ...p, w: Math.max(400, resizeStartRef.current.w + dx) }));
+                if (isResizing === 's' || isResizing === 'se') setWinSize(p => ({ ...p, h: Math.max(300, resizeStartRef.current.h + dy) }));
+            }
+        };
+        const onUp = () => { setIsDragging(false); setIsResizing(null); };
+        if (isDragging || isResizing) {
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
+            document.body.style.userSelect = 'none';
+        }
+        return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.body.style.userSelect = ''; };
+    }, [isDragging, isResizing]);
+
+    /* ── Contact Modal state ── */
+    const [contactOpen, setContactOpen] = useState(false);
+    const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+    const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+    const handleContactSubmit = useCallback(async (e: React.FormEvent) => {
+        e.preventDefault();
+        setContactStatus('sending');
+        try {
+            const fd = new FormData();
+            fd.append('name', contactForm.name);
+            fd.append('email', contactForm.email);
+            fd.append('message', contactForm.message);
+            const res = await fetch('https://formsubmit.co/ajax/pratikthombare03@gmail.com', {
+                method: 'POST', body: fd, headers: { 'Accept': 'application/json' },
+            });
+            const d = await res.json();
+            if (d.success) {
+                setContactStatus('sent');
+                setTimeout(() => { setContactOpen(false); setContactForm({ name: '', email: '', message: '' }); setContactStatus('idle'); }, 2000);
+            } else { setContactStatus('error'); }
+        } catch { setContactStatus('error'); }
+    }, [contactForm]);
 
     // Auto-scroll to bottom — fires after DOM paint
     useEffect(() => {
@@ -1039,7 +1208,7 @@ export default function PratikMinimalPortfolio(): JSX.Element {
             return;
         }
 
-        const result = runCommand(trimmed, theme, setTheme, startTimeRef.current);
+        const result = runCommand(trimmed, theme, setTheme, startTimeRef.current, wallpaper, setWallpaper);
         setLines(prev => [...prev, inputLine, ...result.lines]);
         if (trimmed) setHistory(h => [trimmed, ...h]);
         setHistIdx(-1);
@@ -1153,52 +1322,313 @@ export default function PratikMinimalPortfolio(): JSX.Element {
 
     return (
         <Fragment>
-            <div className="scanlines min-h-screen flex flex-col bg-term-bg transition-colors duration-300" onClick={focus}>
-
-                {/* ── Title bar ── */}
-                <div className="sticky top-0 z-50 flex items-center h-10 px-4 bg-term-titlebar border-b border-term-border select-none shrink-0">
-                    <div className="flex items-center gap-2 mr-4">
-                        <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640]" />
-                        <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123]" />
-                        <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
+            {/* ── Boot Splash Screen ── */}
+            {booting && (
+                <div className={`boot-screen${bootFade ? ' fade-out' : ''}`}>
+                    <div className="boot-logo">{`
+ ██████╗ ██████╗  █████╗ ████████╗██╗██╗  ██╗
+ ██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██║██║ ██╔╝
+ ██████╔╝██████╔╝███████║   ██║   ██║█████╔╝ 
+ ██╔═══╝ ██╔══██╗██╔══██║   ██║   ██║██╔═██╗ 
+ ██║     ██║  ██║██║  ██║   ██║   ██║██║  ██╗
+ ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═╝`.trim()}</div>
+                    <div className="boot-lines">
+                        {bootLines.slice(0, bootPhase).map((l, i) => (
+                            <div key={i} className="boot-line" style={{ animationDelay: `${i * 0.05}s` }}>
+                                <span className={l.status === 'ok' ? 'ok' : 'warn'}>[{l.status === 'ok' ? ' OK ' : 'WARN'}]</span> {l.text}
+                            </div>
+                        ))}
                     </div>
-                    <span className="flex-1 text-center text-[11px] font-mono text-term-muted -ml-12 truncate">
-                        pratik@portfolio — bash — 80×24
-                    </span>
+                    <div className="boot-progress">
+                        <div className="boot-bar" style={{ width: `${(bootPhase / bootLines.length) * 100}%` }} />
+                    </div>
+                    <div className="boot-version">PratikOS v2.0.26 — Build 2026.02</div>
+                </div>
+            )}
+
+            <div className="desktop-layout" onContextMenu={handleContextMenu}>
+
+                {/* ── Right-click context menu ── */}
+                {ctxMenu && (
+                    <div className="context-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }}>
+                        <div className="ctx-item ctx-submenu">
+                            <span><span className="ctx-icon">🎨</span>Change Wallpaper</span>
+                            <span className="ctx-shortcut">▸</span>
+                            <div className="ctx-sub">
+                                {WALLPAPERS.map(wp => (
+                                    <button key={wp} className="ctx-item" onClick={() => { setWallpaper(wp); localStorage.setItem('terminal-wallpaper', wp); setCtxMenu(null); }}>
+                                        <span>{wp === 'none' ? '🚫' : wp === 'city' ? '🏙️' : wp === 'mountains' ? '⛰️' : wp === 'space' ? '🌌' : wp === 'forest' ? '🌲' : wp === 'ocean' ? '🌊' : wp === 'f1' ? '🏎️' : wp === 'cricket' ? '🏏' : ''} {wp.charAt(0).toUpperCase() + wp.slice(1)}</span>
+                                        {wallpaper === wp && <span className="ctx-shortcut">✓</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="ctx-sep" />
+                        <button className="ctx-item" onClick={() => { inputRef.current?.focus(); setCtxMenu(null); }}>
+                            <span><span className="ctx-icon">💻</span>Open Terminal</span>
+                            <span className="ctx-shortcut">Ctrl+`</span>
+                        </button>
+                        <button className="ctx-item" onClick={() => { setContactOpen(true); setCtxMenu(null); }}>
+                            <span><span className="ctx-icon">📧</span>Contact Me</span>
+                        </button>
+                        <div className="ctx-sep" />
+                        <button className="ctx-item" onClick={() => { setPreviewUrl('https://drive.google.com/file/d/1VLOhNIh_EFSARD6z6wfiM8OpADZmWSq3/preview'); setPreviewTitle('Resume.pdf'); setCtxMenu(null); }}>
+                            <span><span className="ctx-icon">📄</span>View Resume</span>
+                        </button>
+                        <a href="https://github.com/pratikt76" target="_blank" rel="noopener noreferrer" className="ctx-item" style={{ textDecoration: 'none' }}>
+                            <span><span className="ctx-icon">🐙</span>GitHub</span>
+                        </a>
+                        <div className="ctx-sep" />
+                        <button className="ctx-item" onClick={() => { window.location.reload(); }}>
+                            <span><span className="ctx-icon">🔄</span>Refresh</span>
+                            <span className="ctx-shortcut">F5</span>
+                        </button>
+                        <button className="ctx-item" onClick={() => { alert('PratikOS v2.0\nBuilt with React + TypeScript\n\n© 2026 Pratik Thombare'); setCtxMenu(null); }}>
+                            <span><span className="ctx-icon">ℹ️</span>About This Desktop</span>
+                        </button>
+                    </div>
+                )}
+
+                {/* ── 8-bit Wallpaper with animations ── */}
+                <div className={`desktop-wallpaper wallpaper-${wallpaper}`}>
+                    {wallpaper === 'space' && (
+                        <div className="twinkle-layer">
+                            {Array.from({ length: 35 }).map((_, i) => (
+                                <span key={i} style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 4}s`, animationDuration: `${2 + Math.random() * 3}s` }} />
+                            ))}
+                        </div>
+                    )}
+                    {wallpaper === 'city' && (
+                        <div className="rain-layer">
+                            {Array.from({ length: 40 }).map((_, i) => (
+                                <span key={i} style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 2}s`, animationDuration: `${0.8 + Math.random() * 0.6}s` }} />
+                            ))}
+                        </div>
+                    )}
+                    {wallpaper === 'forest' && (
+                        <div className="firefly-layer">
+                            {Array.from({ length: 12 }).map((_, i) => (
+                                <span key={i} style={{ left: `${10 + Math.random() * 80}%`, top: `${30 + Math.random() * 50}%`, animationDelay: `${Math.random() * 6}s`, animationDuration: `${4 + Math.random() * 4}s` }} />
+                            ))}
+                        </div>
+                    )}
+                    {wallpaper === 'f1' && <div className="stripe-layer" />}
+                    {wallpaper === 'ocean' && (
+                        <>
+                            <div className="wave-layer" />
+                            <div className="wave-layer" style={{ bottom: '25%', animationDelay: '1.5s' }} />
+                            <div className="wave-layer" style={{ bottom: '30%', animationDelay: '3s' }} />
+                        </>
+                    )}
                 </div>
 
-                {/* ── Terminal body ── */}
-                <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-6 py-4" style={{ minHeight: 0 }}>
-                    <div className="max-w-3xl mx-auto space-y-0.5">
-                        {lines.map((l, i) => renderLine(l, i))}
-
-                        {/* Active input */}
-                        <form onSubmit={handleSubmit} className="flex items-center font-mono text-[13px] sm:text-sm">
-                            <Prompt />
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={input}
-                                onChange={e => setInput(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                className="flex-1 bg-transparent outline-none border-none text-term-text font-mono ml-1"
-                                autoFocus autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
-                            />
-                        </form>
-                        <div ref={bottomRef} />
+                {/* ── Terminal window (draggable & resizable) ── */}
+                <div
+                    ref={terminalRef}
+                    className={`terminal-window scanlines${isDragging ? ' dragging' : ''}${winState !== 'normal' ? ` ${winState}` : ''}`}
+                    style={winState === 'maximized' ? {} : { left: winPos.x, top: winPos.y, width: winSize.w || 'auto', height: winSize.h || 'auto' }}
+                    onClick={focus}
+                >
+                    {/* Title bar — drag handle */}
+                    <div
+                        className="drag-handle sticky top-0 z-50 flex items-center h-10 px-4 bg-term-titlebar border-b border-term-border select-none shrink-0"
+                        style={{ borderRadius: winState === 'maximized' ? '0' : '10px 10px 0 0' }}
+                        onMouseDown={winState === 'maximized' ? undefined : handleDragStart}
+                    >
+                        <div className="flex items-center gap-2 mr-4">
+                            <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); setWinState(s => s === 'minimized' ? 'normal' : 'minimized'); }} />
+                            <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); if (winState === 'minimized') setWinState('normal'); else setWinState('minimized'); }} />
+                            <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); if (winState === 'maximized') { setWinState('normal'); } else { savedPosRef.current = { x: winPos.x, y: winPos.y, w: winSize.w, h: winSize.h }; setWinState('maximized'); } }} />
+                        </div>
+                        <span className="flex-1 text-center text-[11px] font-mono text-term-muted -ml-12 truncate">
+                            pratik@portfolio — bash — 80×24
+                        </span>
                     </div>
+
+                    {/* Terminal body */}
+                    <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-6 py-4" style={{ minHeight: 0 }}>
+                        <div className="max-w-3xl space-y-0.5">
+                            {lines.map((l, i) => renderLine(l, i))}
+                            <form onSubmit={handleSubmit} className="flex items-center font-mono text-[13px] sm:text-sm">
+                                <Prompt />
+                                <input
+                                    ref={inputRef} type="text" value={input}
+                                    onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown}
+                                    className="flex-1 bg-transparent outline-none border-none text-term-text font-mono ml-1"
+                                    autoFocus autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck={false}
+                                />
+                            </form>
+                            <div ref={bottomRef} />
+                        </div>
+                    </div>
+
+                    {/* Status bar */}
+                    <div className="h-6 flex items-center justify-between px-4 text-[10px] font-mono bg-term-titlebar border-t border-term-border text-term-muted select-none shrink-0" style={{ borderRadius: '0 0 10px 10px' }}>
+                        <span>{interactive ? `[${interactive.kind}]` : 'INS'}</span>
+                        <div className="flex items-center gap-4">
+                            <span>{history.length} cmds</span>
+                            <span>UTF-8</span>
+                            <span>bash</span>
+                        </div>
+                    </div>
+
+                    {/* Resize handles */}
+                    <div className="resize-handle resize-handle-e" onMouseDown={handleResizeStart('e')} />
+                    <div className="resize-handle resize-handle-s" onMouseDown={handleResizeStart('s')} />
+                    <div className="resize-handle resize-handle-se" onMouseDown={handleResizeStart('se')} />
                 </div>
 
-                {/* ── Status bar ── */}
-                <div className="h-6 flex items-center justify-between px-4 text-[10px] font-mono bg-term-titlebar border-t border-term-border text-term-muted select-none shrink-0">
-                    <span>{interactive ? `[${interactive.kind}]` : 'INS'}</span>
-                    <div className="flex items-center gap-4">
-                        <span>{history.length} cmds</span>
-                        <span>UTF-8</span>
-                        <span>bash</span>
+                {/* ── Desktop Icons ── */}
+                <div className="desktop-icons">
+                    <a href="https://github.com/pratikt76" target="_blank" rel="noopener noreferrer" className="desktop-icon">
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #333, #24292e)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" /></svg>
+                        </div>
+                        <span className="icon-label">GitHub</span>
+                    </a>
+
+                    <a href="https://linkedin.com/in/pratikt76" target="_blank" rel="noopener noreferrer" className="desktop-icon">
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #0077b5, #005582)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" /></svg>
+                        </div>
+                        <span className="icon-label">LinkedIn</span>
+                    </a>
+
+                    <button onClick={() => { setPreviewUrl('https://drive.google.com/file/d/1VLOhNIh_EFSARD6z6wfiM8OpADZmWSq3/preview'); setPreviewTitle('Resume.pdf'); }} className="desktop-icon" style={{ border: 'none', background: 'none' }}>
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #ea4335, #c5221f)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm3-7h6v1.5H9V13zm0 3h6v1.5H9V16zm0-6h4v1.5H9V10z" /></svg>
+                        </div>
+                        <span className="icon-label">Resume.pdf</span>
+                    </button>
+
+                    <button onClick={() => setContactOpen(true)} className="desktop-icon" style={{ border: 'none', background: 'none' }}>
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #4285f4, #34a853)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                        </div>
+                        <span className="icon-label">Mail Me</span>
+                    </button>
+
+                    <a href="https://instagram.com/pratik.76" target="_blank" rel="noopener noreferrer" className="desktop-icon">
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+                        </div>
+                        <span className="icon-label">Instagram</span>
+                    </a>
+                </div>
+
+                {/* ── Desktop Widgets ── */}
+                <div className="desktop-widgets">
+                    {/* Clock */}
+                    <div className="widget-card widget-clock">
+                        <div className="clock-time">
+                            {clockTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </div>
+                        <div className="clock-date">
+                            {clockTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+                        </div>
                     </div>
+
+                    {/* Calendar */}
+                    <div className="widget-card widget-calendar">
+                        <div className="cal-header">
+                            {clockTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </div>
+                        <div className="cal-grid">
+                            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+                                <span key={d} className="cal-day-name">{d}</span>
+                            ))}
+                            {(() => {
+                                const year = clockTime.getFullYear();
+                                const month = clockTime.getMonth();
+                                const firstDay = new Date(year, month, 1).getDay();
+                                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                                const today = clockTime.getDate();
+                                const cells = [];
+                                for (let i = 0; i < firstDay; i++) cells.push(<span key={`e${i}`} className="cal-day empty" />);
+                                for (let d = 1; d <= daysInMonth; d++) cells.push(<span key={d} className={`cal-day${d === today ? ' today' : ''}`}>{d}</span>);
+                                return cells;
+                            })()}
+                        </div>
+                    </div>
+
+                    {/* Spotify */}
+                    {spWidget && (
+                        <a href={spWidget.url} target="_blank" rel="noopener noreferrer" className="widget-card widget-spotify" style={{ textDecoration: 'none' }}>
+                            <div className="sp-header">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+                                <span>Now Playing</span>
+                            </div>
+                            <div className="sp-track">
+                                {spWidget.art && <img className="sp-art" src={spWidget.art} alt="" />}
+                                <div className="sp-info">
+                                    <div className="sp-name">{spWidget.name}</div>
+                                    <div className="sp-artist">{spWidget.artist}</div>
+                                </div>
+                            </div>
+                        </a>
+                    )}
                 </div>
             </div>
+
+            {/* ── Preview Window (iframe) ── */}
+            {previewUrl && (
+                <div className="preview-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setPreviewUrl(null); setPreviewTitle(''); } }}>
+                    <div className="preview-window">
+                        <div className="preview-titlebar">
+                            <div className="flex items-center gap-2 mr-3">
+                                <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] cursor-pointer" onClick={() => { setPreviewUrl(null); setPreviewTitle(''); }} />
+                                <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123]" />
+                                <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
+                            </div>
+                            <span className="flex-1 text-center text-[11px] font-mono" style={{ color: 'var(--term-muted)' }}>
+                                {previewTitle}
+                            </span>
+                            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="open-tab-btn">
+                                Open in Tab ↗
+                            </a>
+                        </div>
+                        <iframe src={previewUrl} title={previewTitle} />
+                    </div>
+                </div>
+            )}
+
+            {/* ── Contact Modal ── */}
+            {contactOpen && (
+                <div className="contact-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setContactOpen(false); }}>
+                    <div className="contact-modal">
+                        <div className="modal-titlebar">
+                            <div className="flex items-center gap-2 mr-3">
+                                <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] cursor-pointer" onClick={() => { setContactOpen(false); setContactStatus('idle'); }} />
+                                <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123]" />
+                                <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
+                            </div>
+                            <span className="flex-1 text-center text-[11px] font-mono" style={{ color: 'var(--term-muted)' }}>
+                                Contact — Mail Me
+                            </span>
+                        </div>
+                        <div className="modal-body">
+                            {contactStatus === 'sent' ? (
+                                <div className="text-center py-6">
+                                    <div className="text-3xl mb-3">✅</div>
+                                    <div className="text-sm font-mono" style={{ color: 'var(--term-success)' }}>Message sent!</div>
+                                    <div className="text-xs font-mono mt-1" style={{ color: 'var(--term-muted)' }}>I'll get back to you soon.</div>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleContactSubmit}>
+                                    <label>Name</label>
+                                    <input type="text" placeholder="Your name" value={contactForm.name} onChange={e => setContactForm(f => ({ ...f, name: e.target.value }))} required />
+                                    <label>Email</label>
+                                    <input type="email" placeholder="you@example.com" value={contactForm.email} onChange={e => setContactForm(f => ({ ...f, email: e.target.value }))} required />
+                                    <label>Message</label>
+                                    <textarea placeholder="Say something nice..." value={contactForm.message} onChange={e => setContactForm(f => ({ ...f, message: e.target.value }))} required />
+                                    {contactStatus === 'error' && <div className="text-xs font-mono mb-3" style={{ color: '#ef4444' }}>Failed to send. Please try again.</div>}
+                                    <button type="submit" className="modal-btn" disabled={contactStatus === 'sending'}>{contactStatus === 'sending' ? 'Sending...' : 'Send Message'}</button>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </Fragment>
     );
 }
