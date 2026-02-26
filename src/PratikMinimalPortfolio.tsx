@@ -739,6 +739,17 @@ export default function PratikMinimalPortfolio(): JSX.Element {
         const i = setInterval(fetchSp, 60000);
         return () => clearInterval(i);
     }, []);
+    const [spotifyOpen, setSpotifyOpen] = useState(false);
+    const [spotifyTracks, setSpotifyTracks] = useState<{ name: string; artist: string; album: string; art?: string; url?: string }[]>([]);
+    useEffect(() => {
+        if (!spotifyOpen) return;
+        fetch(SPOTIFY_API).then(r => r.json()).then(d => {
+            if (d.tracks?.length) {
+                const seen = new Set<string>();
+                setSpotifyTracks(d.tracks.filter((t: any) => { if (seen.has(t.name)) return false; seen.add(t.name); return true; }).slice(0, 10).map((t: any) => ({ name: t.name, artist: t.artist, album: t.album, art: t.albumImageUrl || t.albumArt || '', url: t.songUrl || '#' })));
+            }
+        }).catch(() => { });
+    }, [spotifyOpen]);
 
     /* ── Boot / splash screen ── */
     const [booting, setBooting] = useState(true);
@@ -1514,6 +1525,13 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                         </div>
                         <span className="icon-label">Instagram</span>
                     </a>
+
+                    <button onClick={() => setSpotifyOpen(true)} className="desktop-icon" style={{ border: 'none', background: 'none' }}>
+                        <div className="icon-img" style={{ background: 'linear-gradient(135deg, #1db954, #158a3e)' }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+                        </div>
+                        <span className="icon-label">Spotify</span>
+                    </button>
                 </div>
 
                 {/* ── Desktop Widgets ── */}
@@ -1624,6 +1642,42 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                                     {contactStatus === 'error' && <div className="text-xs font-mono mb-3" style={{ color: '#ef4444' }}>Failed to send. Please try again.</div>}
                                     <button type="submit" className="modal-btn" disabled={contactStatus === 'sending'}>{contactStatus === 'sending' ? 'Sending...' : 'Send Message'}</button>
                                 </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Spotify Recently Played Modal ── */}
+            {spotifyOpen && (
+                <div className="preview-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSpotifyOpen(false); }}>
+                    <div className="contact-modal" style={{ maxWidth: 380 }}>
+                        <div className="modal-titlebar">
+                            <div className="flex items-center gap-2 mr-3">
+                                <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] cursor-pointer" onClick={() => setSpotifyOpen(false)} />
+                                <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123]" />
+                                <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
+                            </div>
+                            <span className="flex-1 text-center text-[11px] font-mono" style={{ color: 'var(--term-muted)' }}>
+                                🎵 Recently Played — Spotify
+                            </span>
+                        </div>
+                        <div className="modal-body" style={{ padding: '8px 0' }}>
+                            {spotifyTracks.length === 0 ? (
+                                <div className="text-center py-6 font-mono text-xs" style={{ color: 'var(--term-muted)' }}>Loading tracks...</div>
+                            ) : (
+                                spotifyTracks.map((t, i) => (
+                                    <a key={i} href={t.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', textDecoration: 'none', transition: 'background 0.15s', borderRadius: 6, margin: '0 4px' }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                                        <span className="font-mono text-xs" style={{ color: 'var(--term-muted)', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
+                                        {t.art && <img src={t.art} alt="" style={{ width: 36, height: 36, borderRadius: 4, flexShrink: 0 }} />}
+                                        <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                                            <div className="font-mono text-xs" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                                            <div className="font-mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.artist} — {t.album}</div>
+                                        </div>
+                                    </a>
+                                ))
                             )}
                         </div>
                     </div>
