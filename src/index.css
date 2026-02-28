@@ -898,6 +898,7 @@ html {
   top: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  max-height: 100vh !important;
   border-radius: 0 !important;
   transition: all 0.3s ease;
   z-index: 50;
@@ -909,6 +910,864 @@ html {
 
 .terminal-window.maximized>div:last-of-type:not(.resize-handle) {
   border-radius: 0 !important;
+}
+
+/* ═══════════════════════════════════════════
+   SPOTIFY PLAYER MODAL
+   ═══════════════════════════════════════════ */
+
+.spotify-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.spotify-player {
+  width: min(420px, 92vw);
+  max-height: min(620px, 85vh);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #121212;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 32px 100px rgba(0, 0, 0, 0.7);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header bar */
+.spotify-player .sp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.spotify-player .sp-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spotify-player .sp-header-logo {
+  color: #1db954;
+  flex-shrink: 0;
+}
+
+.spotify-player .sp-header-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.spotify-player .sp-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.spotify-player .sp-close-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+/* Now Playing hero */
+.spotify-player .sp-now-playing {
+  position: relative;
+  padding: 24px 24px 20px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.spotify-player .sp-now-playing .sp-np-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px) brightness(0.3);
+  transform: scale(1.5);
+  z-index: 0;
+}
+
+.spotify-player .sp-now-playing .sp-np-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      rgba(18, 18, 18, 0.4) 0%,
+      rgba(18, 18, 18, 0.85) 70%,
+      #121212 100%);
+  z-index: 1;
+}
+
+.spotify-player .sp-np-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.spotify-player .sp-np-art {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.spotify-player .sp-np-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.spotify-player .sp-np-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #1db954;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spotify-player .sp-np-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.spotify-player .sp-np-artist {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* Playing indicator bars */
+.sp-playing-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.sp-playing-bars span {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+  background: #1db954;
+  animation: sp-bar-bounce 0.8s ease-in-out infinite;
+}
+
+.sp-playing-bars span:nth-child(1) {
+  height: 60%;
+  animation-delay: 0s;
+}
+
+.sp-playing-bars span:nth-child(2) {
+  height: 100%;
+  animation-delay: 0.15s;
+}
+
+.sp-playing-bars span:nth-child(3) {
+  height: 40%;
+  animation-delay: 0.3s;
+}
+
+.sp-playing-bars span:nth-child(4) {
+  height: 80%;
+  animation-delay: 0.45s;
+}
+
+@keyframes sp-bar-bounce {
+
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* Section title */
+.spotify-player .sp-section-title {
+  padding: 4px 24px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* Track list */
+.spotify-player .sp-tracklist {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 16px;
+  min-height: 0;
+}
+
+.spotify-player .sp-track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+.spotify-player .sp-track-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.spotify-player .sp-track-num {
+  width: 20px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.spotify-player .sp-track-row:hover .sp-track-num {
+  color: #1db954;
+}
+
+.spotify-player .sp-track-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.spotify-player .sp-track-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.spotify-player .sp-track-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.spotify-player .sp-track-row:hover .sp-track-name {
+  color: #fff;
+}
+
+.spotify-player .sp-track-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotify-player .sp-track-external {
+  opacity: 0;
+  color: rgba(255, 255, 255, 0.5);
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.spotify-player .sp-track-row:hover .sp-track-external {
+  opacity: 1;
+}
+
+/* Spotify scrollbar */
+.spotify-player .sp-tracklist::-webkit-scrollbar {
+  width: 5px;
+}
+
+.spotify-player .sp-tracklist::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.spotify-player .sp-tracklist::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+.spotify-player .sp-tracklist::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Loading skeleton */
+.spotify-player .sp-skeleton {
+  padding: 24px;
+}
+
+.spotify-player .sp-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.spotify-player .sp-skeleton-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.spotify-player .sp-skeleton-lines {
+  flex: 1;
+}
+
+.spotify-player .sp-skeleton-line {
+  height: 10px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.spotify-player .sp-skeleton-line:first-child {
+  width: 70%;
+  margin-bottom: 8px;
+}
+
+.spotify-player .sp-skeleton-line:last-child {
+  width: 45%;
+}
+
+@keyframes sp-shimmer {
+  0% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.spotify-player .sp-skeleton-row {
+  animation: sp-shimmer 1.5s ease-in-out infinite;
+}
+
+.spotify-player .sp-skeleton-row:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.spotify-player .sp-skeleton-row:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.spotify-player .sp-skeleton-row:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.spotify-player .sp-skeleton-row:nth-child(5) {
+  animation-delay: 0.6s;
+}
+
+/* ═══════════════════════════════════════════
+   GITHUB PROFILE MODAL
+   ═══════════════════════════════════════════ */
+
+.gh-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.gh-profile {
+  width: min(860px, 94vw);
+  max-height: min(680px, 88vh);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0d1117;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 32px 100px rgba(0, 0, 0, 0.7);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+/* Header bar */
+.gh-profile .gh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
+}
+
+.gh-profile .gh-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gh-profile .gh-header-logo {
+  color: #f0f6fc;
+  flex-shrink: 0;
+}
+
+.gh-profile .gh-header-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.gh-profile .gh-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gh-profile .gh-open-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #c9d1d9;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.gh-profile .gh-open-tab:hover {
+  background: #30363d;
+  color: #f0f6fc;
+  border-color: #8b949e;
+}
+
+.gh-profile .gh-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #8b949e;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.gh-profile .gh-close-btn:hover {
+  background: #30363d;
+  color: #f0f6fc;
+}
+
+/* Main content */
+.gh-profile .gh-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Left sidebar */
+.gh-profile .gh-sidebar {
+  width: 280px;
+  padding: 24px 20px;
+  border-right: 1px solid #21262d;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.gh-profile .gh-avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.gh-profile .gh-avatar {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 1px solid #30363d;
+  object-fit: cover;
+  background: #161b22;
+}
+
+.gh-profile .gh-display-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f0f6fc;
+  line-height: 1.3;
+}
+
+.gh-profile .gh-username {
+  font-size: 18px;
+  font-weight: 300;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+
+.gh-profile .gh-bio {
+  font-size: 14px;
+  color: #c9d1d9;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.gh-profile .gh-follow-btn {
+  width: 100%;
+  padding: 5px 16px;
+  border-radius: 6px;
+  border: 1px solid #30363d;
+  background: #21262d;
+  color: #c9d1d9;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.gh-profile .gh-follow-btn:hover {
+  background: #30363d;
+  border-color: #8b949e;
+}
+
+.gh-profile .gh-stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #8b949e;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.gh-profile .gh-stats strong {
+  color: #f0f6fc;
+  font-weight: 600;
+}
+
+.gh-profile .gh-stats .gh-dot {
+  margin: 0 4px;
+  color: #30363d;
+}
+
+.gh-profile .gh-meta-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.gh-profile .gh-meta-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8b949e;
+  padding: 3px 0;
+}
+
+.gh-profile .gh-meta-list li svg {
+  flex-shrink: 0;
+  color: #8b949e;
+}
+
+.gh-profile .gh-meta-list li a {
+  color: #c9d1d9;
+  text-decoration: none;
+}
+
+.gh-profile .gh-meta-list li a:hover {
+  color: #58a6ff;
+  text-decoration: underline;
+}
+
+.gh-profile .gh-achievements-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 8px;
+}
+
+.gh-profile .gh-achievements {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.gh-profile .gh-achievement-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #161b22;
+  border: 2px solid #30363d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Right side README */
+.gh-profile .gh-readme {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  min-width: 0;
+}
+
+.gh-profile .gh-readme-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8b949e;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #21262d;
+  margin-bottom: 20px;
+}
+
+.gh-profile .gh-readme-header strong {
+  color: #f0f6fc;
+}
+
+.gh-profile .gh-readme-content h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #21262d;
+}
+
+.gh-profile .gh-readme-content h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 16px 0 8px 0;
+}
+
+.gh-profile .gh-readme-content p {
+  font-size: 14px;
+  color: #c9d1d9;
+  line-height: 1.6;
+  margin: 0 0 12px 0;
+}
+
+.gh-profile .gh-readme-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+}
+
+.gh-profile .gh-readme-content ul li {
+  font-size: 14px;
+  color: #c9d1d9;
+  padding: 3px 0;
+  line-height: 1.5;
+}
+
+.gh-profile .gh-readme-content ul li::before {
+  content: '•';
+  color: #8b949e;
+  margin-right: 8px;
+}
+
+.gh-profile .gh-readme-content a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.gh-profile .gh-readme-content a:hover {
+  text-decoration: underline;
+}
+
+/* Badges row */
+.gh-profile .gh-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.gh-profile .gh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Skills section */
+.gh-profile .gh-skill-group {
+  margin-bottom: 12px;
+}
+
+.gh-profile .gh-skill-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 4px;
+}
+
+.gh-profile .gh-skill-desc {
+  font-size: 13px;
+  color: #8b949e;
+  line-height: 1.5;
+}
+
+.gh-profile .gh-skill-desc ul {
+  margin: 4px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gh-profile .gh-skill-desc ul li {
+  padding: 2px 0;
+  font-size: 13px;
+  color: #8b949e;
+}
+
+.gh-profile .gh-skill-desc ul li::before {
+  content: '•';
+  color: #484f58;
+  margin-right: 8px;
+}
+
+/* Tools grid */
+.gh-profile .gh-tools-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.gh-profile .gh-tool-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #161b22;
+  border: 1px solid #21262d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  cursor: default;
+}
+
+.gh-profile .gh-tool-icon:hover {
+  border-color: #30363d;
+  background: #1c2129;
+  transform: translateY(-2px);
+}
+
+.gh-profile .gh-tool-icon img {
+  width: 22px;
+  height: 22px;
+}
+
+/* GitHub scrollbar */
+.gh-profile .gh-readme::-webkit-scrollbar,
+.gh-profile .gh-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.gh-profile .gh-readme::-webkit-scrollbar-track,
+.gh-profile .gh-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gh-profile .gh-readme::-webkit-scrollbar-thumb,
+.gh-profile .gh-sidebar::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 3px;
+}
+
+.gh-profile .gh-readme::-webkit-scrollbar-thumb:hover,
+.gh-profile .gh-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* Mobile: stack sidebar on top */
+@media (max-width: 640px) {
+  .gh-profile .gh-body {
+    flex-direction: column;
+  }
+
+  .gh-profile .gh-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #21262d;
+    padding: 16px;
+    max-height: 200px;
+  }
+
+  .gh-profile .gh-avatar {
+    width: 80px;
+    height: 80px;
+  }
 }
 
 /* ═══════════════════════════════════════════

@@ -316,6 +316,10 @@ function runCommand(
                     { type: 'text', content: '    rm             not happening' },
                     { type: 'text', content: '    exit           you can\'t leave' },
                     { type: 'text', content: '' },
+                    { type: 'success', content: '  [projects]' },
+                    { type: 'text', content: '    llvis          open LLVis app' },
+                    { type: 'text', content: '    flagmaster     open FlagMaster app' },
+                    { type: 'text', content: '' },
                 );
             }
 
@@ -679,6 +683,14 @@ function runCommand(
         };
         case 'history': return { lines: [] }; // handled in component
 
+        /* ── project shortcuts (hidden) ── */
+        case 'llvis':
+            window.open('https://llvis.vercel.app/', '_blank');
+            return { lines: [{ type: 'success', content: '  Opening LLVis...' }] };
+        case 'flagmaster':
+            window.open('https://pratikt76.github.io/FlagMaster/', '_blank');
+            return { lines: [{ type: 'success', content: '  Opening FlagMaster...' }] };
+
         default: return {
             lines: [
                 { type: 'error', content: `  Command not found: ${c}` },
@@ -740,6 +752,7 @@ export default function PratikMinimalPortfolio(): JSX.Element {
         return () => clearInterval(i);
     }, []);
     const [spotifyOpen, setSpotifyOpen] = useState(false);
+    const [githubOpen, setGithubOpen] = useState(false);
     const [spotifyTracks, setSpotifyTracks] = useState<{ name: string; artist: string; album: string; art?: string; url?: string }[]>([]);
     useEffect(() => {
         if (!spotifyOpen) return;
@@ -1445,11 +1458,27 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                         className="drag-handle sticky top-0 z-50 flex items-center h-10 px-4 bg-term-titlebar border-b border-term-border select-none shrink-0"
                         style={{ borderRadius: winState === 'maximized' ? '0' : '10px 10px 0 0' }}
                         onMouseDown={winState === 'maximized' ? undefined : handleDragStart}
+                        onDoubleClick={(e) => { e.preventDefault(); if (winState === 'maximized') { setWinPos({ x: savedPosRef.current.x, y: savedPosRef.current.y }); setWinSize({ w: savedPosRef.current.w, h: savedPosRef.current.h }); setWinState('normal'); } else { savedPosRef.current = { x: winPos.x, y: winPos.y, w: winSize.w, h: winSize.h }; setWinState('maximized'); } }}
                     >
-                        <div className="flex items-center gap-2 mr-4">
-                            <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); setWinState(s => s === 'minimized' ? 'normal' : 'minimized'); }} />
-                            <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); if (winState === 'minimized') setWinState('normal'); else setWinState('minimized'); }} />
-                            <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29] window-btn cursor-pointer" onClick={(e) => { e.stopPropagation(); if (winState === 'maximized') { setWinState('normal'); } else { savedPosRef.current = { x: winPos.x, y: winPos.y, w: winSize.w, h: winSize.h }; setWinState('maximized'); } }} />
+                        <div className="flex items-center mr-4" style={{ gap: 0 }}>
+                            <div className="window-btn cursor-pointer" style={{ padding: '4px 4px' }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); setWinState(s => s === 'minimized' ? 'normal' : 'minimized'); }}>
+                                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57', border: '1px solid #e14640' }} />
+                            </div>
+                            <div className="window-btn cursor-pointer" style={{ padding: '4px 4px' }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); if (winState === 'minimized') setWinState('normal'); else setWinState('minimized'); }}>
+                                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e', border: '1px solid #dfa123' }} />
+                            </div>
+                            <div className="window-btn cursor-pointer" style={{ padding: '4px 4px' }}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onDoubleClick={(e) => e.stopPropagation()}
+                                onClick={(e) => { e.stopPropagation(); if (winState === 'maximized') { setWinPos({ x: savedPosRef.current.x, y: savedPosRef.current.y }); setWinSize({ w: savedPosRef.current.w, h: savedPosRef.current.h }); setWinState('normal'); } else { savedPosRef.current = { x: winPos.x, y: winPos.y, w: winSize.w, h: winSize.h }; setWinState('maximized'); } }}>
+                                <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840', border: '1px solid #1aab29' }} />
+                            </div>
                         </div>
                         <span className="flex-1 text-center text-[11px] font-mono text-term-muted -ml-12 truncate">
                             pratik@portfolio — bash — 80×24
@@ -1491,12 +1520,12 @@ export default function PratikMinimalPortfolio(): JSX.Element {
 
                 {/* ── Desktop Icons ── */}
                 <div className="desktop-icons">
-                    <a href="https://github.com/pratikt76" target="_blank" rel="noopener noreferrer" className="desktop-icon">
+                    <button onClick={() => setGithubOpen(true)} className="desktop-icon" style={{ border: 'none', background: 'none' }}>
                         <div className="icon-img" style={{ background: 'linear-gradient(135deg, #333, #24292e)' }}>
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" /></svg>
                         </div>
                         <span className="icon-label">GitHub</span>
-                    </a>
+                    </button>
 
                     <a href="https://linkedin.com/in/pratikt76" target="_blank" rel="noopener noreferrer" className="desktop-icon">
                         <div className="icon-img" style={{ background: 'linear-gradient(135deg, #0077b5, #005582)' }}>
@@ -1648,38 +1677,207 @@ export default function PratikMinimalPortfolio(): JSX.Element {
                 </div>
             )}
 
-            {/* ── Spotify Recently Played Modal ── */}
-            {spotifyOpen && (
-                <div className="preview-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSpotifyOpen(false); }}>
-                    <div className="contact-modal" style={{ maxWidth: 380 }}>
-                        <div className="modal-titlebar">
-                            <div className="flex items-center gap-2 mr-3">
-                                <span className="w-3 h-3 rounded-full bg-[#ff5f57] border border-[#e14640] cursor-pointer" onClick={() => setSpotifyOpen(false)} />
-                                <span className="w-3 h-3 rounded-full bg-[#febc2e] border border-[#dfa123]" />
-                                <span className="w-3 h-3 rounded-full bg-[#28c840] border border-[#1aab29]" />
+            {/* ── GitHub Profile Modal ── */}
+            {githubOpen && (
+                <div className="gh-overlay" onClick={(e) => { if (e.target === e.currentTarget) setGithubOpen(false); }}>
+                    <div className="gh-profile">
+                        {/* Header */}
+                        <div className="gh-header">
+                            <div className="gh-header-left">
+                                <svg className="gh-header-logo" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" /></svg>
+                                <span className="gh-header-title">pratikt76</span>
                             </div>
-                            <span className="flex-1 text-center text-[11px] font-mono" style={{ color: 'var(--term-muted)' }}>
-                                🎵 Recently Played — Spotify
-                            </span>
+                            <div className="gh-header-right">
+                                <a href="https://github.com/pratikt76" target="_blank" rel="noopener noreferrer" className="gh-open-tab">Open in Tab ↗</a>
+                                <button className="gh-close-btn" onClick={() => setGithubOpen(false)}>✕</button>
+                            </div>
                         </div>
-                        <div className="modal-body" style={{ padding: '8px 0' }}>
-                            {spotifyTracks.length === 0 ? (
-                                <div className="text-center py-6 font-mono text-xs" style={{ color: 'var(--term-muted)' }}>Loading tracks...</div>
-                            ) : (
-                                spotifyTracks.map((t, i) => (
-                                    <a key={i} href={t.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', textDecoration: 'none', transition: 'background 0.15s', borderRadius: 6, margin: '0 4px' }}
-                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                                        <span className="font-mono text-xs" style={{ color: 'var(--term-muted)', width: 18, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
-                                        {t.art && <img src={t.art} alt="" style={{ width: 36, height: 36, borderRadius: 4, flexShrink: 0 }} />}
-                                        <div style={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
-                                            <div className="font-mono text-xs" style={{ color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
-                                            <div className="font-mono" style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.artist} — {t.album}</div>
+
+                        {/* Body */}
+                        <div className="gh-body">
+                            {/* Sidebar */}
+                            <div className="gh-sidebar">
+                                <div className="gh-avatar-wrap">
+                                    <img className="gh-avatar" src="https://avatars.githubusercontent.com/u/100241546" alt="Pratik Thombare" />
+                                </div>
+                                <div className="gh-display-name">Pratik Thombare</div>
+                                <div className="gh-username">pratikt76 · he/him</div>
+                                <div className="gh-bio">23, Hail Hydra COEP'24 🎓</div>
+                                <a href="https://github.com/pratikt76" target="_blank" rel="noopener noreferrer" className="gh-follow-btn" style={{ display: 'block', textDecoration: 'none', textAlign: 'center' }}>Follow</a>
+
+                                <div className="gh-stats">
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="#8b949e"><path d="M2 5.5a3.5 3.5 0 115.898 2.549 5.508 5.508 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.493 3.493 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z" /></svg>
+                                    <strong>9</strong> followers
+                                    <span className="gh-dot">·</span>
+                                    <strong>22</strong> following
+                                </div>
+
+                                <ul className="gh-meta-list">
+                                    <li>
+                                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.536 3.464a5 5 0 010 7.072L8 14.07l-3.536-3.535a5 5 0 117.072-7.072v.001zm1.06 8.132a6.5 6.5 0 10-9.192 0l3.535 3.536a1.5 1.5 0 002.122 0l3.535-3.536zM8 9a2 2 0 100-4 2 2 0 000 4z" /></svg>
+                                        Pune
+                                    </li>
+                                    <li>
+                                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z" /></svg>
+                                        <a href="https://pratikt76.github.io" target="_blank" rel="noopener noreferrer">pratikt76.github.io</a>
+                                    </li>
+                                    <li>
+                                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5.25a.75.75 0 01.75.75v1.5h3.5V1a.75.75 0 011.5 0v1.5h.25A2.75 2.75 0 0114.25 5.25v7.5A2.75 2.75 0 0111.5 15.5h-7A2.75 2.75 0 011.75 12.75v-7.5A2.75 2.75 0 014.5 2.5h.25V1a.75.75 0 01.75-.75zM3.25 7v5.75c0 .69.56 1.25 1.25 1.25h7c.69 0 1.25-.56 1.25-1.25V7H3.25z" /></svg>
+                                        pratik.76
+                                    </li>
+                                </ul>
+
+                                <div className="gh-achievements-title">Achievements</div>
+                                <div className="gh-achievements">
+                                    <div className="gh-achievement-badge" title="Pull Shark">🦈</div>
+                                    <div className="gh-achievement-badge" title="Quickdraw">⚡</div>
+                                    <div className="gh-achievement-badge" title="YOLO">🎯</div>
+                                </div>
+                            </div>
+
+                            {/* README */}
+                            <div className="gh-readme">
+                                <div className="gh-readme-header">
+                                    <strong>pratikt76</strong> / README.md
+                                </div>
+
+                                <div className="gh-readme-content">
+                                    <p style={{ fontSize: 18, fontWeight: 600 }}>Hi there, I'm Pratik 👋</p>
+
+                                    <h2>Currently</h2>
+                                    <ul>
+                                        <li>🌱 I'm learning <strong style={{ color: '#f0f6fc' }}>Spring Boot, Docker, and Kubernetes</strong></li>
+                                        <li>🏠 All of my work lives at <a href="https://pratikthombare.vercel.app/" target="_blank" rel="noopener noreferrer">my portfolio site</a></li>
+                                        <li>💬 Ask me about <strong style={{ color: '#f0f6fc' }}>Java, Spring Boot,</strong> and random trivia no one asked for</li>
+                                        <li>💼 Currently working as an <strong style={{ color: '#f0f6fc' }}>SDE at Bajaj Finserv</strong></li>
+                                        <li>⚡ Fun fact: I watch more cinema than I write code... <em>almost</em>.</li>
+                                    </ul>
+
+                                    <h2>🔑 Key Skills</h2>
+
+                                    <div className="gh-skill-group">
+                                        <div className="gh-skill-title">☕ Java + Spring Boot</div>
+                                        <div className="gh-skill-desc">
+                                            <ul>
+                                                <li>Experience building robust microservices with Java and Spring Boot</li>
+                                                <li>Skilled in designing REST APIs and following best practices for maintainability and scalability</li>
+                                            </ul>
                                         </div>
-                                    </a>
-                                ))
-                            )}
+                                    </div>
+
+                                    <div className="gh-skill-group">
+                                        <div className="gh-skill-title">🐳 Docker + Kubernetes</div>
+                                        <div className="gh-skill-desc">
+                                            <ul>
+                                                <li>Dockerizing apps like a pro to ensure clean and consistent deployments</li>
+                                                <li>Familiar with K8s orchestration for auto-scaling and service management</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div className="gh-skill-group">
+                                        <div className="gh-skill-title">🔥 Apache Kafka</div>
+                                        <div className="gh-skill-desc">
+                                            <ul>
+                                                <li>Event-driven design with Kafka for real-time data streaming and processing</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <h2>🛠️ Languages and Tools</h2>
+                                    <div className="gh-tools-grid">
+                                        {[
+                                            { name: 'Java', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
+                                            { name: 'Spring', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/spring/spring-original.svg' },
+                                            { name: 'JavaScript', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg' },
+                                            { name: 'TypeScript', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg' },
+                                            { name: 'Python', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+                                            { name: 'React', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
+                                            { name: 'Docker', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
+                                            { name: 'Kubernetes', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg' },
+                                            { name: 'Git', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
+                                            { name: 'PostgreSQL', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg' },
+                                            { name: 'MongoDB', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg' },
+                                            { name: 'Linux', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg' },
+                                            { name: 'Redis', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg' },
+                                            { name: 'Kafka', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apachekafka/apachekafka-original.svg' },
+                                        ].map(t => (
+                                            <div key={t.name} className="gh-tool-icon" title={t.name}>
+                                                <img src={t.icon} alt={t.name} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Spotify Player Modal ── */}
+            {spotifyOpen && (
+                <div className="spotify-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSpotifyOpen(false); }}>
+                    <div className="spotify-player">
+                        {/* Header */}
+                        <div className="sp-header">
+                            <div className="sp-header-left">
+                                <svg className="sp-header-logo" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+                                <span className="sp-header-title">Spotify</span>
+                            </div>
+                            <button className="sp-close-btn" onClick={() => setSpotifyOpen(false)}>✕</button>
+                        </div>
+
+                        {spotifyTracks.length === 0 ? (
+                            /* Loading skeleton */
+                            <div className="sp-skeleton">
+                                {[...Array(5)].map((_, i) => (
+                                    <div key={i} className="sp-skeleton-row">
+                                        <div className="sp-skeleton-art" />
+                                        <div className="sp-skeleton-lines">
+                                            <div className="sp-skeleton-line" />
+                                            <div className="sp-skeleton-line" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                {/* Now Playing hero */}
+                                <div className="sp-now-playing">
+                                    {spotifyTracks[0]?.art && <div className="sp-np-bg" style={{ backgroundImage: `url(${spotifyTracks[0].art})` }} />}
+                                    <div className="sp-np-gradient" />
+                                    <div className="sp-np-content">
+                                        {spotifyTracks[0]?.art && <img className="sp-np-art" src={spotifyTracks[0].art} alt="" />}
+                                        <div className="sp-np-info">
+                                            <div className="sp-np-label">
+                                                <div className="sp-playing-bars"><span /><span /><span /><span /></div>
+                                                Recently Played
+                                            </div>
+                                            <div className="sp-np-name">{spotifyTracks[0]?.name}</div>
+                                            <div className="sp-np-artist">{spotifyTracks[0]?.artist}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section title */}
+                                <div className="sp-section-title">Up Next</div>
+
+                                {/* Track list */}
+                                <div className="sp-tracklist">
+                                    {spotifyTracks.slice(1).map((t, i) => (
+                                        <a key={i} href={t.url} target="_blank" rel="noopener noreferrer" className="sp-track-row">
+                                            <span className="sp-track-num">{i + 2}</span>
+                                            {t.art && <img className="sp-track-art" src={t.art} alt="" />}
+                                            <div className="sp-track-info">
+                                                <div className="sp-track-name">{t.name}</div>
+                                                <div className="sp-track-meta">{t.artist} · {t.album}</div>
+                                            </div>
+                                            <span className="sp-track-external">↗</span>
+                                        </a>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
